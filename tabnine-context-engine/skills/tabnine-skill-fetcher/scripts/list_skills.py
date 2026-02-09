@@ -53,7 +53,7 @@ def main():
         print("Set it as an environment variable or provide a credentials file with --creds-file.", file=sys.stderr)
         sys.exit(1)
 
-    url = f"https://{host}/indexer/talz-endpoint"
+    url = f"https://{host}/indexer/skills"
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
 
     try:
