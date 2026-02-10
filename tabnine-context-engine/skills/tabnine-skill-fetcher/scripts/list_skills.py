@@ -9,6 +9,7 @@ Credentials are resolved in order:
 """
 
 import argparse
+import json
 import os
 import sys
 import urllib.request
@@ -58,13 +59,23 @@ def main():
 
     try:
         with urllib.request.urlopen(req) as resp:
-            print(resp.read().decode())
+            data = json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
         print(f"Error: HTTP {e.code} from {url}", file=sys.stderr)
         sys.exit(1)
     except urllib.error.URLError as e:
         print(f"Error: Could not connect to {url}: {e.reason}", file=sys.stderr)
         sys.exit(1)
+
+    if isinstance(data, list):
+        skill_names = [item if isinstance(item, str) else item.get("name", str(item)) for item in data]
+    else:
+        print(f"Error: unexpected response format from {url}", file=sys.stderr)
+        sys.exit(1)
+
+    base = f"https://{host}/indexer/skills"
+    result = {name: f"{base}/{name}" for name in skill_names}
+    print(json.dumps(result, indent=2))
 
 
 if __name__ == "__main__":

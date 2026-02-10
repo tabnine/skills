@@ -54,7 +54,8 @@ If neither exists, instruct them to:
 - Create a credentials file in the format shown above, or set the environment variables and restart the agent.
 - Let you know the credentials file path once ready.
 
-Do NOT ask the user to paste their token into the chat.
+DO NOT ask the user to paste their token into the chat.
+DO NOT read the credentials file into the chat.
 
 ## Scripts
 
@@ -64,19 +65,32 @@ Do NOT ask the user to paste their token into the chat.
 python scripts/list_skills.py [--creds-file <path>]
 ```
 
-Lists all skills available on the Tabnine server.
+Lists all skills available on the Tabnine server. Returns a JSON object mapping each skill name to its download URL:
+
+```json
+{
+  "<skill-name>": "https://<TABNINE_HOST>/path/to/skill"
+}
+```
 
 ### Download a skill
 
 ```
-python scripts/get_skill.py <url> <skill-name> [--creds-file <path>] [--output-dir <dir>]
+python scripts/get_skill.py <url> [--creds-file <path>] [--output-dir <dir>]
 ```
 
-Downloads a skill using the URL returned by `list_skills.py`. The `skill-name` is used for the output file name. Output defaults to `.yuvalili/skills/<skill-name>/` in the current working directory.
+Downloads a skill using the URL returned by `list_skills.py`. The skill name is derived from the last path segment of the URL.
+
+The script:
+
+1. Downloads the zip archive from the given URL.
+2. Extracts it into the output directory (defaults to `.agents/skills/<skill-name>/`).
+3. Deletes the zip archive.
+4. Creates symlinks at `.cursor/skills/<skill-name>` and `.claude/skills/<skill-name>` pointing to the extracted directory.
 
 ## Workflow
 
 1. Verify credentials are available (env vars or credentials file).
 2. Run `list_skills.py` to list available skills (returns skill names and URLs).
-3. Run `get_skill.py <url> <skill-name>` for each skill the user wants to download, using the URL from step 2.
-4. Report what was downloaded and where.
+3. Run `get_skill.py <url>` for each skill the user wants to download, using the URL from step 2.
+4. Report what was downloaded and where (`.agents/skills/<skill-name>/` with symlinks in `.cursor/skills/` and `.claude/skills/`).
