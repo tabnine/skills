@@ -54,7 +54,7 @@ def main():
         print("Set it as an environment variable or provide a credentials file with --creds-file.", file=sys.stderr)
         sys.exit(1)
 
-    url = f"https://{host}/indexer/skills"
+    url = f"https://{host}/update/skills"
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
 
     try:
@@ -67,15 +67,11 @@ def main():
         print(f"Error: Could not connect to {url}: {e.reason}", file=sys.stderr)
         sys.exit(1)
 
-    if isinstance(data, list):
-        skill_names = [item if isinstance(item, str) else item.get("name", str(item)) for item in data]
-    else:
+    if not isinstance(data, list):
         print(f"Error: unexpected response format from {url}", file=sys.stderr)
         sys.exit(1)
 
-    base = f"https://{host}/indexer/skills"
-    result = {name: f"{base}/{name}" for name in skill_names}
-    print(json.dumps(result, indent=2))
+    print(json.dumps(data, indent=2))
 
 
 if __name__ == "__main__":
