@@ -1,19 +1,19 @@
 {
-  "name": "tabnine-plugins",
+  "name": "tabnine-agent-plugins",
   "owner": {
     "name": "Tabnine",
     "email": "support@tabnine.com"
   },
   "plugins": [
     {
-      "name": "tabnine-context-engine",
-      "description": "Search and explore remote repositories, code symbols, and API specifications",
+      "name": "tabnine-toolkit",
+      "description": "Fetch and manage Tabnine tools including skills, MCP servers, and integrations",
       "version": "1.0.0",
       "author": {
         "name": "Tabnine"
       },
       "category": "development",
-      "source": "./tabnine-context-engine"
+      "source": "./tabnine-toolkit"
     }
   ]
 }
