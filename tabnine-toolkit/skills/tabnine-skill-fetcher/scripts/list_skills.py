@@ -1,57 +1,27 @@
 #!/usr/bin/env python3
 """List available Tabnine skills from the remote endpoint.
 
-Usage: python list_skills.py [--creds-file <path>]
+Usage: python list_skills.py
 
-Credentials are resolved in order:
-  1. --creds-file flag (key=value file with TABNINE_HOST and TABNINE_TOKEN)
-  2. Environment variables TABNINE_HOST and TABNINE_TOKEN
+Requires environment variables TABNINE_HOST and TABNINE_TOKEN.
 """
 
-import argparse
 import json
 import os
 import sys
 import urllib.request
 
 
-def load_creds_file(path):
-    creds = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "=" in line:
-                key, value = line.split("=", 1)
-                creds[key.strip()] = value.strip()
-    return creds
-
-
 def main():
-    parser = argparse.ArgumentParser(description="List available Tabnine skills")
-    parser.add_argument("--creds-file", help="Path to credentials file")
-    args = parser.parse_args()
-
     host = os.environ.get("TABNINE_HOST", "")
     token = os.environ.get("TABNINE_TOKEN", "")
 
-    if args.creds_file:
-        if not os.path.isfile(args.creds_file):
-            print(f"Error: credentials file not found: {args.creds_file}", file=sys.stderr)
-            sys.exit(1)
-        creds = load_creds_file(args.creds_file)
-        host = creds.get("TABNINE_HOST", host)
-        token = creds.get("TABNINE_TOKEN", token)
-
     if not host:
-        print("Error: TABNINE_HOST is not set.", file=sys.stderr)
-        print("Set it as an environment variable or provide a credentials file with --creds-file.", file=sys.stderr)
+        print("Error: TABNINE_HOST environment variable is not set.", file=sys.stderr)
         sys.exit(1)
 
     if not token:
-        print("Error: TABNINE_TOKEN is not set.", file=sys.stderr)
-        print("Set it as an environment variable or provide a credentials file with --creds-file.", file=sys.stderr)
+        print("Error: TABNINE_TOKEN environment variable is not set.", file=sys.stderr)
         sys.exit(1)
 
     url = f"https://{host}/update/skills"

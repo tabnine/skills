@@ -9,7 +9,7 @@ List and download skills from a remote Tabnine server. Only downloads skills tha
 
 ## Credentials
 
-Two values are required to authenticate with the Tabnine server:
+Two environment variables are required to authenticate with the Tabnine server:
 
 - **TABNINE_HOST** — The hostname of the Tabnine instance (the user must know this).
 - **TABNINE_TOKEN** — A personal access token for authentication.
@@ -21,41 +21,13 @@ Two values are required to authenticate with the Tabnine server:
 3. Click **Generate token**.
 4. Copy the token immediately (it will not be shown again).
 
-### Providing Credentials
-
-Credentials can be supplied in two ways:
-
-**Option A: Credentials file**
-
-Create a plain-text file with:
-
-```
-TABNINE_HOST=your-tabnine-host.example.com
-TABNINE_TOKEN=your-token-here
-```
-
-Then tell the agent the file path. Lines starting with `#` are ignored.
-
-**Option B: Environment variables**
-
-Set `TABNINE_HOST` and `TABNINE_TOKEN` as environment variables before starting the agent.
-
 ### Resolving Credentials
 
-Before running any script, verify that credentials are available.
-If you can't find `TABNINE_HOST` and `TABNINE_TOKEN` env vars, and the user did not provide a credentials file, ask the user:
-
-1. Do you have `TABNINE_HOST` and `TABNINE_TOKEN` set as environment variables?
-2. Or do you have a credentials file? If so, what is the path?
-
-If neither exists, instruct them to:
-
-- Obtain `TABNINE_TOKEN` following the steps above.
-- Create a credentials file in the format shown above, or set the environment variables.
-- Let you know the credentials file path once ready or that the environment variables are set.
+Before running any script, verify that `TABNINE_HOST` and `TABNINE_TOKEN` environment variables are set.
+If either is missing, ask the user to set them and restart the agent.
 
 DO NOT ask the user to paste their token into the chat.
-DO NOT read the credentials file into the chat.
+DO NOT print the token in the terminal or logs.
 
 ## Scripts
 
@@ -64,14 +36,10 @@ DO NOT read the credentials file into the chat.
 **Usage:**
 
 ```
-python scripts/list_skills.py [--creds-file <path>]
+python scripts/list_skills.py
 ```
 
-**Input:**
-
-| Argument | Required | Description |
-|---|---|---|
-| `--creds-file <path>` | No | Path to a credentials file. Falls back to env vars if omitted. |
+**Input:** None (reads `TABNINE_HOST` and `TABNINE_TOKEN` from environment variables).
 
 **Output:**
 
@@ -97,7 +65,7 @@ A JSON array of skill objects, each containing a name, version, and download URL
 **Usage:**
 
 ```
-python scripts/get_skill.py <url> [--creds-file <path>] [--output-dir <dir>]
+python scripts/get_skill.py <url> [--output-dir <dir>]
 ```
 
 **Input:**
@@ -105,8 +73,9 @@ python scripts/get_skill.py <url> [--creds-file <path>] [--output-dir <dir>]
 | Argument | Required | Description |
 |---|---|---|
 | `<url>` | Yes | The download URL from the `list_skills.py` output. |
-| `--creds-file <path>` | No | Path to a credentials file. Falls back to env vars if omitted. |
 | `--output-dir <dir>` | No | Base directory for extracted skills. Defaults to `.agents/skills/`. |
+
+Reads `TABNINE_TOKEN` from environment variables for authentication.
 
 **Behavior:**
 
@@ -119,7 +88,7 @@ The skill name is derived from the last path segment of the URL.
 
 ## Workflow
 
-1. **Resolve credentials** — Verify that `TABNINE_HOST` and `TABNINE_TOKEN` are available via env vars or a credentials file. If missing, ask the user (see Resolving Credentials above).
+1. **Resolve credentials** — Verify that `TABNINE_HOST` and `TABNINE_TOKEN` environment variables are set. If missing, ask the user to set them and restart the agent.
 2. **List skills** — Run `list_skills.py` to get all available skills with their names, versions, and download URLs.
 3. **Check versions** — For each skill in the list, check whether it already exists locally by reading the `.version` file in `.agents/skills/<skill-name>/`. Compare the local version against the version from the list response. Skip any skill whose local version matches the server version.
 4. **Download updated skills** — Run `get_skill.py <url>` for each skill that is new or has a changed version.
