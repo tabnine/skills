@@ -85,6 +85,12 @@ def main():
 
     try:
         with zipfile.ZipFile(zip_path, "r") as zf:
+            for member in zf.namelist():
+                member_path = os.path.normpath(os.path.join(base_dir, member))
+                if not member_path.startswith(os.path.abspath(base_dir)):
+                    print(f"Error: zip contains unsafe path: {member}", file=sys.stderr)
+                    os.unlink(zip_path)
+                    sys.exit(1)
             zf.extractall(base_dir)
         print(f"Skill '{skill_name}' extracted to {output_dir} (scope: {args.scope})")
     except zipfile.BadZipFile:
