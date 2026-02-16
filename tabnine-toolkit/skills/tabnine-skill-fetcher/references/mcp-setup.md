@@ -50,11 +50,4 @@ Cursor uses `${env:VAR}` syntax for environment variables.
 | Project | `./.cursor/mcp.json` |
 | User | `~/.cursor/mcp.json` |
 
-### Windsurf
-
-| Scope | Path |
-|---|---|
-| Project | `./.windsurf/mcp.json` |
-| User | `~/.codeium/windsurf/mcp_config.json` |
-
 If the config file already exists, merge the `tabnine-context-engine` entry into the existing `mcpServers` object rather than overwriting the file.
