@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """Download a Tabnine skill by URL and save it to disk.
 
-Usage: python get_skill.py <url> [--output-dir <dir>]
+Usage: python get_skill.py <url> --scope <project|user> [--output-dir <dir>]
 
 The URL is obtained from the list_skills.py output. The skill name is derived
 from the last path segment of the URL.
 
 The downloaded zip is extracted into the output directory and the archive is
-deleted. Symlinks are created at .cursor/skills/<name> and .claude/skills/<name>.
+deleted. Symlinks are created pointing to the extracted directory.
+
+Scope determines where skills are stored:
+  project — ./.agents/skills/<name>, symlinked from ./.claude/skills/<name>
+  user    — ~/.agents/skills/<name>, symlinked from ~/.claude/skills/<name>
 
 Requires environment variable TABNINE_TOKEN.
-
-Output defaults to .agents/skills/<skill-name> in the current directory.
 """
 
 import argparse
@@ -22,10 +24,34 @@ import zipfile
 import tempfile
 
 
+def resolve_paths(scope, output_dir_override=None):
+    """Return (base_dir, symlink_parents) based on scope."""
+    if scope == "user":
+        home = os.path.expanduser("~")
+        base_dir = output_dir_override or os.path.join(home, ".agents", "skills")
+        symlink_parents = [
+            os.path.join(home, ".claude", "skills"),
+            os.path.join(home, ".cursor", "skills"),
+        ]
+    else:
+        base_dir = output_dir_override or os.path.join(".agents", "skills")
+        symlink_parents = [
+            os.path.join(".claude", "skills"),
+            os.path.join(".cursor", "skills"),
+        ]
+    return base_dir, symlink_parents
+
+
 def main():
     parser = argparse.ArgumentParser(description="Download a Tabnine skill")
     parser.add_argument("url", help="URL to download the skill from (from list_skills.py output)")
-    parser.add_argument("--output-dir", help="Output directory (default: .agents/skills/<skill-name>)")
+    parser.add_argument(
+        "--scope",
+        choices=["project", "user"],
+        required=True,
+        help="Install scope: 'project' (current project) or 'user' (home directory)",
+    )
+    parser.add_argument("--output-dir", help="Override base directory for extracted skills")
     args = parser.parse_args()
 
     token = os.environ.get("TABNINE_TOKEN", "")
@@ -35,7 +61,7 @@ def main():
         sys.exit(1)
 
     skill_name = args.url.rstrip("/").rsplit("/", 1)[-1]
-    base_dir = args.output_dir or os.path.join(".agents", "skills")
+    base_dir, symlink_parents = resolve_paths(args.scope, args.output_dir)
     os.makedirs(base_dir, exist_ok=True)
 
     req = urllib.request.Request(args.url, headers={"Authorization": f"Bearer {token}"})
@@ -59,8 +85,14 @@ def main():
 
     try:
         with zipfile.ZipFile(zip_path, "r") as zf:
+            for member in zf.namelist():
+                member_path = os.path.normpath(os.path.join(base_dir, member))
+                if not member_path.startswith(os.path.abspath(base_dir)):
+                    print(f"Error: zip contains unsafe path: {member}", file=sys.stderr)
+                    os.unlink(zip_path)
+                    sys.exit(1)
             zf.extractall(base_dir)
-        print(f"Skill '{skill_name}' extracted to {output_dir}")
+        print(f"Skill '{skill_name}' extracted to {output_dir} (scope: {args.scope})")
     except zipfile.BadZipFile:
         print(f"Error: downloaded file from {args.url} is not a valid zip archive", file=sys.stderr)
         os.unlink(zip_path)
@@ -68,12 +100,11 @@ def main():
 
     os.unlink(zip_path)
 
-    # Create symlinks for Cursor and Claude
-    for agent_dir in [".cursor", ".claude"]:
-        link_parent = os.path.join(agent_dir, "skills")
+    # Create symlinks for agent integrations
+    abs_output = os.path.abspath(output_dir)
+    for link_parent in symlink_parents:
         os.makedirs(link_parent, exist_ok=True)
         link_path = os.path.join(link_parent, skill_name)
-        abs_output = os.path.abspath(output_dir)
         if os.path.islink(link_path):
             os.unlink(link_path)
         elif os.path.exists(link_path):
