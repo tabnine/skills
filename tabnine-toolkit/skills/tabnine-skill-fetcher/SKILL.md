@@ -90,11 +90,12 @@ The skill name is derived from the last path segment of the URL.
 ## Workflow
 
 1. **Resolve credentials** — Verify that `TABNINE_HOST` and `TABNINE_TOKEN` environment variables are set. If missing, ask the user to set them and restart the agent.
-2. **Ask for install scope** — Ask the user whether to install skills at **project** scope (current project only) or **user** scope (available across all projects). See [references/project-scope.md](references/project-scope.md) and [references/user-scope.md](references/user-scope.md) for details on each scope.
-3. **List skills** — Run `list_skills.py` to get all available skills with their names, versions, and download URLs.
-4. **Check versions** — For each skill in the list, check whether it already exists by reading the `.version` file in the appropriate `.agents/skills/<skill-name>/` directory for the chosen scope. Compare the local version against the version from the list response. Skip any skill whose local version matches the server version.
-5. **Download updated skills** — Run `get_skill.py <url> --scope <project|user>` for each skill that is new or has a changed version.
-6. **Report results** — Summarize what was downloaded and where, including the paths to `.agents/skills/<skill-name>/` and the symlinks in `.claude/skills/` and `.cursor/skills/`.
+2. **Check MCP setup** — Verify the Tabnine context engine MCP server is configured for the user's agent. If not, guide the user to set it up. See [references/mcp-setup.md](references/mcp-setup.md) for the config JSON and file locations per agent.
+3. **Ask for install scope** — Ask the user whether to install skills at **project** scope (current project only) or **user** scope (available across all projects). See [references/project-scope.md](references/project-scope.md) and [references/user-scope.md](references/user-scope.md) for details on each scope.
+4. **List skills** — Run `list_skills.py` to get all available skills with their names, versions, and download URLs.
+5. **Check versions** — For each skill in the list, check whether it already exists by reading the `.version` file in the appropriate `.agents/skills/<skill-name>/` directory for the chosen scope. Compare the local version against the version from the list response. Skip any skill whose local version matches the server version.
+6. **Download updated skills** — Run `get_skill.py <url> --scope <project|user>` for each skill that is new or has a changed version.
+7. **Report results** — Summarize what was downloaded and where, including the paths to `.agents/skills/<skill-name>/` and the symlinks in `.claude/skills/` and `.cursor/skills/`.
 
 ### Versioning
 
