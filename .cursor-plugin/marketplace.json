@@ -11,8 +11,8 @@
   },
   "plugins": [
     {
-      "name": "tabnine-remote-repos-context",
-      "source": "tabnine-remote-repos-context",
+      "name": "tabnine-context-engine",
+      "source": "tabnine-context-engine",
       "description": "Tabnine Context Engine - Search, explore, and investigate remote repositories using Tabnine's indexed codebase"
     }
   ]

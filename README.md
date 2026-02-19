@@ -1,4 +1,4 @@
-# Tabnine Remote Repos Context
+# Tabnine Context Engine
 
 Multi-platform plugins for searching, exploring, and investigating remote repositories using [Tabnine's Context Engine](https://www.tabnine.com/).
 
@@ -8,8 +8,8 @@ Provides semantic code search, symbol lookup, OpenAPI spec querying, and deep co
 
 | Platform | Path | Status |
 |----------|------|--------|
-| **Claude Code** | [`plugins/claude/tabnine-remote-repos-context/`](plugins/claude/tabnine-remote-repos-context/) | Plugin + Skill + Agent + Command |
-| **Cursor** | [`plugins/cursor/tabnine-remote-repos-context/`](plugins/cursor/tabnine-remote-repos-context/) | Plugin + Skill + Agent + Rule |
+| **Claude Code** | [`plugins/claude/tabnine-context-engine/`](plugins/claude/tabnine-context-engine/) | Plugin + Skill + Agent + Command |
+| **Cursor** | [`plugins/cursor/tabnine-context-engine/`](plugins/cursor/tabnine-context-engine/) | Plugin + Skill + Agent + Rule |
 | **Gemini** | [`plugins/gemini/gemini-extension.json`](plugins/gemini/gemini-extension.json) | Extension manifest |
 
 ## Prerequisites
@@ -33,7 +33,7 @@ export TABNINE_TOKEN="your-personal-access-token"
 ### Claude Code
 
 ```bash
-claude plugin add tabnine-remote-repos-context
+claude plugin add tabnine-context-engine
 ```
 
 Then ask Claude about remote repos or use the `/investigate` command:
@@ -44,7 +44,7 @@ Then ask Claude about remote repos or use the `/investigate` command:
 
 ### Cursor
 
-1. Copy `plugins/cursor/tabnine-remote-repos-context/mcp.json` to your project
+1. Copy `plugins/cursor/tabnine-context-engine/mcp.json` to your project
 2. The always-active rule will guide Cursor to use Tabnine Context Engine for cross-repo questions
 
 ## Available MCP Tools
@@ -82,9 +82,11 @@ Available in both Claude Code (as an agent) and Cursor (as an agent definition).
 tabnine-skills/
 ├── .claude-plugin/
 │   └── marketplace.json              # Claude plugin marketplace entry
+├── .cursor-plugin/
+│   └── marketplace.json              # Cursor plugin marketplace entry
 ├── plugins/
 │   ├── claude/
-│   │   └── tabnine-remote-repos-context/
+│   │   └── tabnine-context-engine/
 │   │       ├── .claude-plugin/plugin.json
 │   │       ├── .mcp.json
 │   │       ├── agents/
@@ -95,8 +97,8 @@ tabnine-skills/
 │   │       │   └── remote-repositories-context/SKILL.md
 │   │       └── README.md
 │   ├── cursor/
-│   │   └── tabnine-remote-repos-context/
-│   │       ├── .cursor/plugin.json
+│   │   └── tabnine-context-engine/
+│   │       ├── .cursor-plugin/plugin.json
 │   │       ├── mcp.json
 │   │       ├── agents/
 │   │       │   └── tabnine-context-engine-investigator.md
@@ -107,5 +109,7 @@ tabnine-skills/
 │   │       └── README.md
 │   └── gemini/
 │       └── gemini-extension.json
+├── scripts/
+│   └── validate-cursor-plugin.mjs
 └── README.md
 ```
