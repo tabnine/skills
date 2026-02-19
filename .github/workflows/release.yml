@@ -70,3 +70,9 @@ jobs:
           GH_BUILDER_TOKEN: ${{ secrets.GH_BUILDER_TOKEN }}
           plugin_type: tabnine_skills_version
           tag: ${{ env.TAG }}
+
+      - name: Summary
+        run: |
+          echo "### Release v${{ env.TAG }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Tagged \`v${{ env.TAG }}\` and pushed to git" >> $GITHUB_STEP_SUMMARY
+          echo "- Released \`tabnine_skills_version:${{ env.TAG }}\` to self-hosted-update-service" >> $GITHUB_STEP_SUMMARY
