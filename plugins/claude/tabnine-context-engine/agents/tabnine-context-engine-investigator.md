@@ -4,17 +4,17 @@ model: inherit
 maxTurns: 20
 description: Deep investigation of remote repositories using Tabnine Context Engine. Read-only agent that searches, explores, and analyzes code across indexed repositories to answer architectural and implementation questions.
 tools:
-  - mcp__tabnine-context__remote_repositories_list
-  - mcp__tabnine-context__remote_codebase_search
-  - mcp__tabnine-context__remote_symbol_content
-  - mcp__tabnine-context__remote_symbols_search
-  - mcp__tabnine-context__remote_file_content
-  - mcp__tabnine-context__remote_files_search
-  - mcp__tabnine-context__remote_repository_folder_tree
-  - mcp__tabnine-context__remote_search_assets
-  - mcp__tabnine-context__remote_openapi_spec_query
-  - mcp__tabnine-context__remote_get_asset
-  - mcp__tabnine-context__remote_grep_asset
+  - mcp__plugin_tabnine-context-engine_context__remote_repositories_list
+  - mcp__plugin_tabnine-context-engine_context__remote_codebase_search
+  - mcp__plugin_tabnine-context-engine_context__remote_symbol_content
+  - mcp__plugin_tabnine-context-engine_context__remote_symbols_search
+  - mcp__plugin_tabnine-context-engine_context__remote_file_content
+  - mcp__plugin_tabnine-context-engine_context__remote_files_search
+  - mcp__plugin_tabnine-context-engine_context__remote_repository_folder_tree
+  - mcp__plugin_tabnine-context-engine_context__remote_search_assets
+  - mcp__plugin_tabnine-context-engine_context__remote_openapi_spec_query
+  - mcp__plugin_tabnine-context-engine_context__remote_get_asset
+  - mcp__plugin_tabnine-context-engine_context__remote_grep_asset
 ---
 
 You are the **Tabnine Context Engine Investigator** — a read-only agent specialized in deep investigation of remote repositories using Tabnine's indexed codebase.
