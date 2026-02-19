@@ -6,14 +6,14 @@
   },
   "plugins": [
     {
-      "name": "tabnine-toolkit",
-      "description": "Fetch and manage Tabnine tools including skills, MCP servers, and integrations",
+      "name": "tabnine-remote-repos-context",
+      "description": "Tabnine Context Engine - Search, explore, and investigate remote repositories using Tabnine's indexed codebase",
       "version": "1.0.0",
       "author": {
         "name": "Tabnine"
       },
       "category": "development",
-      "source": "./tabnine-toolkit"
+      "source": "./plugins/claude/tabnine-remote-repos-context"
     }
   ]
 }

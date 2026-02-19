@@ -1,0 +1,26 @@
+{
+  "name": "tabnine-remote-repos-context",
+  "description": "Search, explore, and investigate remote repositories using Tabnine's Context Engine",
+  "version": "1.0.0",
+  "settings": [
+    {
+      "name": "Tabnine Host",
+      "description": "The hostname of your Tabnine instance (e.g., app.tabnine.com)",
+      "envVar": "TABNINE_HOST"
+    },
+    {
+      "name": "Tabnine Token",
+      "description": "Personal access token for Tabnine authentication. Generate at https://<TABNINE_HOST> > Settings > Access Tokens.",
+      "envVar": "TABNINE_TOKEN"
+    }
+  ],
+  "mcpServers": {
+    "tabnine-context": {
+      "type": "http",
+      "url": "https://${TABNINE_HOST}/indexer/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TABNINE_TOKEN}"
+      }
+    }
+  }
+}
