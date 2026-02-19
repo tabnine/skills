@@ -12,7 +12,7 @@
   "plugins": [
     {
       "name": "tabnine-remote-repos-context",
-      "source": "./plugins/cursor/tabnine-remote-repos-context",
+      "source": "tabnine-remote-repos-context",
       "description": "Tabnine Context Engine - Search, explore, and investigate remote repositories using Tabnine's indexed codebase"
     }
   ]
