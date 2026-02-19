@@ -1,6 +1,5 @@
 ---
 description: Use Tabnine Context Engine for cross-repo questions
-globs:
 alwaysApply: true
 ---
 
