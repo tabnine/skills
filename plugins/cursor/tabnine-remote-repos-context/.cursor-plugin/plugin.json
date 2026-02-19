@@ -1,0 +1,11 @@
+{
+  "name": "tabnine-remote-repos-context",
+  "displayName": "Tabnine Remote Repos Context",
+  "version": "1.0.0",
+  "description": "Tabnine Context Engine - Search, explore, and investigate remote repositories using Tabnine's indexed codebase. Provides semantic code search, symbol lookup, OpenAPI spec querying, and deep codebase investigation across all your team's repositories.",
+  "author": {
+    "name": "Tabnine",
+    "email": "support@tabnine.com"
+  },
+  "keywords": ["tabnine", "context-engine", "remote-repos", "code-search", "mcp"]
+}
