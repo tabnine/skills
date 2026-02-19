@@ -11,9 +11,9 @@
   },
   "plugins": [
     {
-      "name": "context-engine",
-      "source": "context-engine",
-      "description": "Tabnine Context Engine - Search, explore, and investigate remote repositories using Tabnine's indexed codebase"
+      "name": "tabnine-context-engine",
+      "source": "tabnine-context-engine",
+      "description": "Search, explore, and investigate your team's remote repositories using Tabnine's Context Engine. Part of the Tabnine plugin suite — additional plugins such as coaching are coming soon."
     }
   ]
 }

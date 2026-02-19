@@ -1,5 +1,5 @@
 {
-  "context-engine": {
+  "tabnine-context-engine": {
     "type": "http",
     "url": "https://${TABNINE_HOST}/indexer/mcp",
     "headers": {

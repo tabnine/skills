@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "context-engine": {
+    "tabnine-context-engine": {
       "type": "http",
       "url": "https://${env:TABNINE_HOST}/indexer/mcp",
       "headers": {
