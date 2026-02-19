@@ -55,7 +55,8 @@ jobs:
           git add VERSION
           git commit -m "chore: bump version to ${{ env.TAG }} [skip ci]"
           git tag "v${{ env.TAG }}"
-          git push origin HEAD --follow-tags
+          git push origin HEAD
+          git push origin "v${{ env.TAG }}"
 
       - name: Trigger self-hosted-update-service Release
         uses: codota/tabnine-github-actions/update_service_tag_version@master
