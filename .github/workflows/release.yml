@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version bump level (major/minor/patch) or explicit version (e.g. 2.1.0)'
+        required: false
+        default: 'minor'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.actor != 'codota-builder'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_BUILDER_TOKEN }}
+
+      - name: Setup git
+        run: |
+          set -ex
+          git config --global user.email "builder+skip-ci@codota.com"
+          git config --global user.name "codota-builder"
+
+      - name: Resolve version
+        run: |
+          set -ex
+          CURRENT=$(cat VERSION | tr -d '[:space:]')
+          INPUT="${{ github.event.inputs.version || 'minor' }}"
+          SEMVER_RE='^[0-9]+\.[0-9]+\.[0-9]+(-[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$'
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$(echo "$CURRENT" | cut -d'-' -f1)"
+
+          case "$INPUT" in
+            major) NEW_VERSION="$((MAJOR + 1)).0.0" ;;
+            minor) NEW_VERSION="${MAJOR}.$((MINOR + 1)).0" ;;
+            patch) NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+            *)
+              if echo "$INPUT" | grep -qE "$SEMVER_RE"; then
+                NEW_VERSION="$INPUT"
+              else
+                echo "::error::Invalid version: '$INPUT'. Must be major/minor/patch or a valid semver (e.g. 1.2.3, 1.2.3-beta.0)"
+                exit 1
+              fi
+              ;;
+          esac
+
+          echo "$NEW_VERSION" > VERSION
+          echo "TAG=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Commit and tag
+        run: |
+          set -ex
+          git add VERSION
+          git commit -m "chore: bump version to ${{ env.TAG }} [skip ci]"
+          git tag "v${{ env.TAG }}"
+          git push origin HEAD --follow-tags
+
+      - name: Trigger self-hosted-update-service Release
+        uses: codota/tabnine-github-actions/update_service_tag_version@master
+        with:
+          GH_BUILDER_TOKEN: ${{ secrets.GH_BUILDER_TOKEN }}
+          plugin_type: tabnine_skills_version
+          tag: ${{ env.TAG }}
