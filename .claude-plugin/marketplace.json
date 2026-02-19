@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "tabnine-remote-repos-context",
-      "description": "Tabnine Context Engine - Search, explore, and investigate remote repositories using Tabnine's indexed codebase",
+      "description": "Tabnine AI agent skills, tools, and integrations — including remote codebase search, code investigation, coaching, and more",
       "version": "1.0.0",
       "author": {
         "name": "Tabnine"
