@@ -1,5 +1,5 @@
 {
-  "name": "tabnine-context-engine",
+  "name": "context-engine",
   "description": "Tabnine Context Engine - Search, explore, and investigate remote repositories using Tabnine's indexed codebase. Provides semantic code search, symbol lookup, OpenAPI spec querying, and deep codebase investigation across all your team's repositories.",
   "version": "1.0.0",
   "author": { "name": "Tabnine", "email": "support@tabnine.com" }
