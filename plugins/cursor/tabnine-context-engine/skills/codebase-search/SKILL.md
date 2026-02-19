@@ -1,5 +1,5 @@
 ---
-name: remote-repositories-context
+name: codebase-search
 description: >
   Search, explore, and investigate remote repositories using Tabnine's Context Engine.
   Use when users ask about remote repos, search for code across repositories, need

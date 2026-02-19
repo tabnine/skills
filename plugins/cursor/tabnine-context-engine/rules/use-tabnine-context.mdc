@@ -30,4 +30,4 @@ When the user asks about code in remote repositories, wants to search across mul
 - User asks to search for specific code patterns across the codebase
 - User asks about dependencies between services
 
-See the `remote-repositories-context` skill for detailed instructions on how to use the available tools and workflow patterns.
+See the `codebase-search` skill for detailed instructions on how to use the available tools and workflow patterns.
