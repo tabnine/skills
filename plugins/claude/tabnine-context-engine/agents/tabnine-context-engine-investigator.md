@@ -1,6 +1,7 @@
 ---
 name: investigator
 model: inherit
+maxTurns: 20
 description: Deep investigation of remote repositories using Tabnine Context Engine. Read-only agent that searches, explores, and analyzes code across indexed repositories to answer architectural and implementation questions.
 tools:
   - mcp__tabnine-context__remote_repositories_list
