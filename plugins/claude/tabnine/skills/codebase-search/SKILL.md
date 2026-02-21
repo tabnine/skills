@@ -26,7 +26,7 @@ Activate this skill when the user:
 
 ## Available MCP Tools
 
-All tools are provided by the `context-engine` MCP server.
+All tools are provided by the `tabnine-context` MCP server.
 
 ### Repository Discovery
 

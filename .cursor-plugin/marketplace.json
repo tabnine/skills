@@ -4,15 +4,10 @@
     "name": "Tabnine",
     "email": "support@tabnine.com"
   },
-  "metadata": {
-    "description": "Tabnine AI agent skills, tools, and integrations — including remote codebase search, code investigation, coaching, and more",
-    "version": "1.0.0",
-    "pluginRoot": "plugins/cursor"
-  },
   "plugins": [
     {
-      "name": "tabnine-context-engine",
-      "source": "tabnine-context-engine",
+      "name": "tabnine",
+      "source": "plugins/cursor/tabnine",
       "description": "Search, explore, and investigate your team's remote repositories using Tabnine's Context Engine. Part of the Tabnine plugin suite — additional plugins such as coaching are coming soon."
     }
   ]
