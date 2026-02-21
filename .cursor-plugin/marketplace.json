@@ -8,7 +8,7 @@
     {
       "name": "tabnine",
       "source": "plugins/cursor/tabnine",
-      "description": "Search, explore, and investigate your team's remote repositories using Tabnine's Context Engine. Part of the Tabnine plugin suite — additional plugins such as coaching are coming soon."
+      "description": "Search, explore, and investigate your team's remote repositories using Tabnine's Context Engine."
     }
   ]
 }
