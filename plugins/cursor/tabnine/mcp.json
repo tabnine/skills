@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "tabnine-context": {
+      "type": "http",
+      "url": "https://${env:TABNINE_HOST}/indexer/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:TABNINE_TOKEN}"
+      }
+    }
+  }
+}
