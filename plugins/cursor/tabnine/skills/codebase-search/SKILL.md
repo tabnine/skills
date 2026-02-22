@@ -1,14 +1,9 @@
 ---
 name: codebase-search
 description: >
-  Search, explore, and investigate remote repositories using Tabnine's Context Engine.
-  Use when users ask about remote repos, search for code across repositories, need
-  architectural understanding of remote codebases, want to find functions/classes/APIs
-  in team repositories, or ask questions like "how does service X work", "find the
-  implementation of Y", "what APIs does Z expose", "show me the code for W".
-  Also use when reviewing code and assessing impact on other repos, when working on
-  a pull request that needs cross-repo context, or when using an external API and
-  needing to verify correct usage or find existing examples in the codebase.
+  MCP tool reference for the investigator subagent. Provides the full list of
+  Tabnine Context Engine tools and workflow patterns for searching, exploring,
+  and investigating remote repositories.
 ---
 
 # Tabnine Remote Repositories Context
@@ -17,18 +12,8 @@ Provides access to Tabnine's Context Engine for searching, exploring, and unders
 
 ## When to Use
 
-Activate this skill when the user:
-- Asks about code in remote repositories or across multiple repos
-- Wants to search for functions, classes, symbols, or patterns across the codebase
-- Needs architectural understanding of a service or system
-- Asks "how does X work" about a remote service or module
-- Wants to find API endpoints, OpenAPI specs, or service summaries
-- Needs to explore the structure of a remote repository
-- Asks to compare implementations across repos
-- Wants to understand dependencies or integrations between services
-- Is reviewing code and wants to assess the potential impact on other repos or services
-- Is reviewing or working on a pull request and needs context from related repos
-- Is working with an external API and needs to verify correct usage or find existing examples in the codebase
+This skill is used by the investigator subagent. Refer to it to choose the right
+MCP tool for the task at hand.
 
 ## Available MCP Tools
 
