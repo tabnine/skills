@@ -27,10 +27,9 @@ export TABNINE_TOKEN="your-personal-access-token"
 
 ### Obtaining a Token
 
-1. Open `https://<TABNINE_HOST>` in a browser
-2. Navigate to **Settings** > **Access Tokens**
-3. Click **Generate token**
-4. Copy the token and set it as `TABNINE_TOKEN`
+1. Open `https://<TABNINE_HOST>/app/settings/access-tokens` in a browser
+2. Click **Generate token**
+3. Copy the token and set it as `TABNINE_TOKEN`
 
 ## What's Included
 
