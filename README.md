@@ -41,7 +41,17 @@ Then ask Claude about remote repos or use the `/investigate` command:
 
 ### Cursor
 
-Install via the Cursor plugin marketplace, or copy `plugins/cursor/tabnine/mcp.json` to your project. The always-active rule will guide Cursor to use Tabnine Context Engine for cross-repo questions.
+Install via the Cursor plugin marketplace, or use the install script to copy agents, skills, rules, and MCP config directly into your project:
+
+```bash
+# Install into the current repo (local .cursor/)
+bash <(curl -fsSL https://raw.githubusercontent.com/tabnine/skills/main/scripts/install-cursor-plugin.sh)
+
+# Install globally (~/.cursor/)
+bash <(curl -fsSL https://raw.githubusercontent.com/tabnine/skills/main/scripts/install-cursor-plugin.sh) --global
+```
+
+The script clones this repo into a temp directory, copies all primitives (agents, skills, rules, MCP config), and cleans up automatically.
 
 ## Available MCP Tools
 
@@ -103,5 +113,7 @@ tabnine-skills/
 │           ├── skills/
 │           │   └── codebase-search/SKILL.md
 │           └── README.md
-└── README.md
+└── scripts/
+    ├── validate-cursor-plugin.mjs
+    └── install-cursor-plugin.sh       # Install Cursor plugin primitives into any repo
 ```
