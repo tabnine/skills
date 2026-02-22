@@ -41,17 +41,21 @@ Then ask Claude about remote repos or use the `/investigate` command:
 
 ### Cursor
 
-Install via the Cursor plugin marketplace, or use the install script to copy agents, skills, rules, and MCP config directly into your project:
+Install via the Cursor plugin marketplace.
+
+## Manual Installation (Cursor)
+
+If the marketplace is not available, use the install script to copy all plugin primitives — agents, skills, rules, and MCP config — directly into your project or global Cursor config:
 
 ```bash
-# Install into the current repo (local .cursor/)
+# Install into the current repo (.cursor/)
 bash <(curl -fsSL https://raw.githubusercontent.com/tabnine/skills/main/scripts/install-cursor-plugin.sh)
 
 # Install globally (~/.cursor/)
 bash <(curl -fsSL https://raw.githubusercontent.com/tabnine/skills/main/scripts/install-cursor-plugin.sh) --global
 ```
 
-The script clones this repo into a temp directory, copies all primitives (agents, skills, rules, MCP config), and cleans up automatically.
+The script clones this repo into a temp directory, copies all primitives, and cleans up automatically. Restart Cursor after running.
 
 ## Available MCP Tools
 
