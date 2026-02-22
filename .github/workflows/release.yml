@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Bump level (major/minor/patch/premajor/preminor/prepatch/prerelease) or explicit version (e.g. 2.1.0-beta.0)'
+        required: false
+        default: 'minor'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.actor != 'codota-builder'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_BUILDER_TOKEN }}
+
+      - name: Setup git
+        run: |
+          set -e
+          git config --global user.email "builder+skip-ci@codota.com"
+          git config --global user.name "codota-builder"
+
+      - name: Resolve version
+        run: |
+          set -e
+          npm install -g semver
+          CURRENT=$(cat VERSION | tr -d '[:space:]')
+          INPUT="${{ github.event.inputs.version || 'minor' }}"
+
+          case "$INPUT" in
+            major|minor|patch|premajor|preminor|prepatch|prerelease)
+              NEW_VERSION=$(semver -i "$INPUT" "$CURRENT")
+              ;;
+            *)
+              NEW_VERSION=$(semver "$INPUT") || {
+                echo "::error::Invalid version: '$INPUT'. Must be a bump level (major/minor/patch/premajor/preminor/prepatch/prerelease) or a valid semver (e.g. 1.2.3, 1.2.3-beta.0)"
+                exit 1
+              }
+              ;;
+          esac
+
+          echo "$NEW_VERSION" > VERSION
+          echo "TAG=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Commit and tag
+        run: |
+          set -e
+          git add VERSION
+          git commit -m "chore: bump version to ${{ env.TAG }} [skip ci]"
+          git tag "v${{ env.TAG }}"
+          git push origin HEAD
+          git push origin "v${{ env.TAG }}"
+
+      - name: Summary
+        run: |
+          echo "### Release v${{ env.TAG }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Tagged \`v${{ env.TAG }}\` and pushed to git" >> $GITHUB_STEP_SUMMARY
+          echo "- Released \`tabnine_skills_version:${{ env.TAG }}\` to self-hosted-update-service" >> $GITHUB_STEP_SUMMARY

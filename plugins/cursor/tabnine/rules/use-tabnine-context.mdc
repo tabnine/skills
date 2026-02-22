@@ -1,0 +1,25 @@
+---
+description: Use Tabnine Context Engine for cross-repo questions
+alwaysApply: true
+---
+
+# Tabnine Context Engine
+
+When the user asks about code in remote repositories, wants to search across multiple repos, or needs to understand how a service or module works across the codebase, use the Tabnine Context Engine MCP tools.
+
+## When to Use
+
+- User asks "how does X work" about a remote service
+- User wants to find implementations across repos
+- User asks about API endpoints or service contracts
+- User needs to understand architecture or data flow
+- User asks to search for specific code patterns across the codebase
+- User asks about dependencies between services
+
+## When Not to Use
+
+- The user is asking about local files already open in the editor
+- The question is about general programming concepts, not a specific remote codebase
+- The user has already provided the relevant code or docs in the conversation
+
+See the `codebase-search` skill for available tools and workflow patterns.

@@ -1,0 +1,19 @@
+{
+  "name": "tabnine",
+  "owner": {
+    "name": "Tabnine",
+    "email": "support@tabnine.com"
+  },
+  "plugins": [
+    {
+      "name": "tabnine",
+      "description": "Search, explore, and investigate your team's remote repositories using Tabnine's Context Engine.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Tabnine"
+      },
+      "category": "development",
+      "source": "./plugins/claude/tabnine"
+    }
+  ]
+}
