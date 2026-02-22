@@ -6,6 +6,9 @@ description: >
   architectural understanding of remote codebases, want to find functions/classes/APIs
   in team repositories, or ask questions like "how does service X work", "find the
   implementation of Y", "what APIs does Z expose", "show me the code for W".
+  Also use when reviewing code and assessing impact on other repos, when working on
+  a pull request that needs cross-repo context, or when using an external API and
+  needing to verify correct usage or find existing examples in the codebase.
 ---
 
 # Tabnine Remote Repositories Context
@@ -23,6 +26,9 @@ Activate this skill when the user:
 - Needs to explore the structure of a remote repository
 - Asks to compare implementations across repos
 - Wants to understand dependencies or integrations between services
+- Is reviewing code and wants to assess the potential impact on other repos or services
+- Is reviewing or working on a pull request and needs context from related repos
+- Is working with an external API and needs to verify correct usage or find existing examples in the codebase
 
 ## Available MCP Tools
 
