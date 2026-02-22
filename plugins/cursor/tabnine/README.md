@@ -16,14 +16,7 @@ curl -fsSL https://raw.githubusercontent.com/tabnine/skills/main/scripts/install
 curl -fsSL https://raw.githubusercontent.com/tabnine/skills/main/scripts/install-cursor-plugin.sh | bash -s -- --global
 ```
 
-After the script completes, you must **manually enable the MCP server in Cursor**:
-
-1. Open Cursor → **Settings** → **MCP**
-2. Find `tabnine-context` in the server list
-3. Toggle it **on**
-4. Restart Cursor
-
-> This step cannot be automated — Cursor requires the MCP server to be enabled through its UI.
+After the script completes, open Cursor's MCP settings and enable the `tabnine-context` server.
 
 ### Option 2: Manual install
 
