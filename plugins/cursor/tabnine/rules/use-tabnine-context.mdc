@@ -15,6 +15,9 @@ When the user asks about code in remote repositories, wants to search across mul
 - User needs to understand architecture or data flow
 - User asks to search for specific code patterns across the codebase
 - User asks about dependencies between services
+- User is reviewing code and wants to understand the potential impact on other repos or services
+- User is reviewing or working on a pull request and needs context from related repos
+- User is working with an external API used elsewhere in the codebase and needs to verify correct usage or find examples
 
 ## When Not to Use
 
