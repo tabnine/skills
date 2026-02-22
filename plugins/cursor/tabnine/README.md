@@ -1,11 +1,10 @@
-# Tabnine Remote Repos Context — Cursor Plugin
+# Tabnine — Cursor Plugin
 
 Search, explore, and investigate remote repositories using Tabnine's Context Engine directly from Cursor.
 
 ## Installation
 
-1. Copy the `mcp.json` file to your project root or Cursor settings directory
-2. Set the required environment variables
+Install via the Cursor plugin marketplace, or manually copy `mcp.json` to your project root or Cursor settings directory and set the required environment variables.
 
 ## Prerequisites
 
@@ -25,16 +24,18 @@ export TABNINE_TOKEN="your-personal-access-token"
 
 ## What's Included
 
-### Skill: Remote Repositories Context
+### Skill: `codebase-search`
 Describes the available Tabnine Context Engine MCP tools and when to use them.
 
-### Agent: Tabnine Context Engine Investigator
+### Agent: Investigator
 A read-only agent for deep investigation of remote repositories using semantic search, symbol lookup, and file browsing.
 
-### Rule: use-tabnine-context
-An always-active Cursor rule that encourages use of the Tabnine Context Engine for cross-repo questions.
+### Rule: `use-tabnine-context`
+An always-active Cursor rule that guides the AI to use Tabnine Context Engine for cross-repo questions.
 
 ## Available MCP Tools
+
+All tools are served by the `tabnine-context` MCP server.
 
 | Tool | Description |
 |------|-------------|

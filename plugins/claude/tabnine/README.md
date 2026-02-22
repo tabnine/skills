@@ -1,4 +1,4 @@
-# Tabnine Remote Repos Context — Claude Plugin
+# Tabnine — Claude Code Plugin
 
 Search, explore, and investigate remote repositories using Tabnine's Context Engine directly from Claude Code.
 
@@ -7,13 +7,14 @@ Search, explore, and investigate remote repositories using Tabnine's Context Eng
 ### From Marketplace
 
 ```bash
-claude plugin add tabnine-remote-repos-context
+claude plugin add tabnine
 ```
 
 ### Manual Installation
 
-1. Clone this repository
-2. Run `claude plugin add ./plugins/claude/tabnine-remote-repos-context`
+```bash
+claude plugin add ./plugins/claude/tabnine
+```
 
 ## Prerequisites
 
@@ -33,11 +34,11 @@ export TABNINE_TOKEN="your-personal-access-token"
 
 ## What's Included
 
-### Skill: Remote Repositories Context
+### Skill: `codebase-search`
 Automatically activates when you ask about remote repositories, search for code across repos, or need architectural understanding of remote codebases.
 
-### Agent: Tabnine Context Engine Investigator
-A read-only agent that performs deep investigation of remote repositories. It systematically explores code using semantic search, symbol lookup, and file browsing to answer complex questions.
+### Agent: Investigator
+A read-only agent that performs deep investigation of remote repositories. Systematically explores code using semantic search, symbol lookup, and file browsing to answer complex questions.
 
 ### Command: `/investigate`
 Quick access to the investigator agent:
@@ -47,6 +48,8 @@ Quick access to the investigator agent:
 ```
 
 ## Available MCP Tools
+
+All tools are served by the `tabnine-context` MCP server.
 
 | Tool | Description |
 |------|-------------|

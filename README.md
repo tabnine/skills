@@ -1,16 +1,13 @@
-# Tabnine Context Engine
+# Tabnine Skills
 
-Multi-platform plugins for searching, exploring, and investigating remote repositories using [Tabnine's Context Engine](https://www.tabnine.com/).
-
-Provides semantic code search, symbol lookup, OpenAPI spec querying, and deep codebase investigation across all your team's indexed repositories.
+Agent skills, tools, and integrations for Tabnine's Context Engine — enabling semantic code search, symbol lookup, OpenAPI spec querying, and deep codebase investigation across all your team's indexed repositories.
 
 ## Supported Platforms
 
 | Platform | Path | Status |
 |----------|------|--------|
-| **Claude Code** | [`plugins/claude/tabnine-context-engine/`](plugins/claude/tabnine-context-engine/) | Plugin + Skill + Agent + Command |
-| **Cursor** | [`plugins/cursor/tabnine-context-engine/`](plugins/cursor/tabnine-context-engine/) | Plugin + Skill + Agent + Rule |
-| **Gemini** | [`plugins/gemini/gemini-extension.json`](plugins/gemini/gemini-extension.json) | Extension manifest |
+| **Claude Code** | [`plugins/claude/tabnine/`](plugins/claude/tabnine/) | Plugin + Skill + Agent + Command |
+| **Cursor** | [`plugins/cursor/tabnine/`](plugins/cursor/tabnine/) | Plugin + Skill + Agent + Rule |
 
 ## Prerequisites
 
@@ -33,7 +30,7 @@ export TABNINE_TOKEN="your-personal-access-token"
 ### Claude Code
 
 ```bash
-claude plugin add tabnine-context-engine
+claude plugin add tabnine
 ```
 
 Then ask Claude about remote repos or use the `/investigate` command:
@@ -44,8 +41,7 @@ Then ask Claude about remote repos or use the `/investigate` command:
 
 ### Cursor
 
-1. Copy `plugins/cursor/tabnine-context-engine/mcp.json` to your project
-2. The always-active rule will guide Cursor to use Tabnine Context Engine for cross-repo questions
+Install via the Cursor plugin marketplace, or copy `plugins/cursor/tabnine/mcp.json` to your project. The always-active rule will guide Cursor to use Tabnine Context Engine for cross-repo questions.
 
 ## Available MCP Tools
 
@@ -67,14 +63,14 @@ All tools are served by the `tabnine-context` MCP server.
 
 ## Investigator Agent
 
-The **Tabnine Context Engine Investigator** is a read-only agent that performs deep investigation of remote repositories. It:
+A read-only agent that performs deep investigation of remote repositories. It:
 
 - Systematically explores code using all available MCP tools
 - Follows references across repositories and services
 - Returns structured findings with source references
 - Maintains an exploration trace for transparency
 
-Available in both Claude Code (as an agent) and Cursor (as an agent definition).
+Available in both Claude Code and Cursor.
 
 ## Project Structure
 
@@ -86,30 +82,26 @@ tabnine-skills/
 │   └── marketplace.json              # Cursor plugin marketplace entry
 ├── plugins/
 │   ├── claude/
-│   │   └── tabnine-context-engine/
+│   │   └── tabnine/
 │   │       ├── .claude-plugin/plugin.json
 │   │       ├── .mcp.json
 │   │       ├── agents/
-│   │       │   └── tabnine-context-engine-investigator.md
+│   │       │   └── investigator.md
 │   │       ├── commands/
 │   │       │   └── investigate.md
 │   │       ├── skills/
-│   │       │   └── remote-repositories-context/SKILL.md
+│   │       │   └── codebase-search/SKILL.md
 │   │       └── README.md
-│   ├── cursor/
-│   │   └── tabnine-context-engine/
-│   │       ├── .cursor-plugin/plugin.json
-│   │       ├── mcp.json
-│   │       ├── agents/
-│   │       │   └── tabnine-context-engine-investigator.md
-│   │       ├── rules/
-│   │       │   └── use-tabnine-context.mdc
-│   │       ├── skills/
-│   │       │   └── remote-repositories-context/SKILL.md
-│   │       └── README.md
-│   └── gemini/
-│       └── gemini-extension.json
-├── scripts/
-│   └── validate-cursor-plugin.mjs
+│   └── cursor/
+│       └── tabnine/
+│           ├── .cursor-plugin/plugin.json
+│           ├── mcp.json
+│           ├── agents/
+│           │   └── investigator.md
+│           ├── rules/
+│           │   └── use-tabnine-context.mdc
+│           ├── skills/
+│           │   └── codebase-search/SKILL.md
+│           └── README.md
 └── README.md
 ```
