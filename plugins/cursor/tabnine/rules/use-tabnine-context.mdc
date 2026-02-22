@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Tabnine Context Engine
 
-When the user asks about code in remote repositories, wants to search across multiple repos, or needs to understand how a service or module works across the codebase, use the @investigator agent.
+When the user asks about code in remote repositories, wants to search across multiple repos, or needs to understand how a service or module works across the codebase, use the investigator subagent.
 
 ## When to Use
 
@@ -22,4 +22,4 @@ When the user asks about code in remote repositories, wants to search across mul
 - The question is about general programming concepts, not a specific remote codebase
 - The user has already provided the relevant code or docs in the conversation
 
-Use the @investigator agent to search and explore remote repositories.
+Use the investigator subagent to search and explore remote repositories.
