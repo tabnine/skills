@@ -5,5 +5,12 @@
     "headers": {
       "Authorization": "Bearer ${TABNINE_TOKEN}"
     }
+  },
+  "tabnine-coaching": {
+    "type": "http",
+    "url": "https://${TABNINE_HOST}/coaching/api/mcp",
+    "headers": {
+      "Authorization": "Bearer ${TABNINE_TOKEN}"
+    }
   }
 }
