@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# install-cursor-plugin.sh — install the Tabnine Cursor plugin
+#
+# Usage:
+#   bash install-cursor-plugin.sh              # install from GitHub, local project scope
+#   bash install-cursor-plugin.sh --global     # install from GitHub, global (~/.cursor)
+#   bash install-cursor-plugin.sh --local      # install from this local repo, local project scope
+#   bash install-cursor-plugin.sh --local --global  # install from this local repo, globally
+#
+# --local reads plugin files directly from the local skills repo instead of cloning from GitHub.
+# Useful during development to test changes without pushing first.
 set -euo pipefail
 
 REPO="https://github.com/tabnine/skills"
