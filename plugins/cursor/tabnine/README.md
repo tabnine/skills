@@ -4,23 +4,7 @@ Search, explore, and investigate remote repositories using Tabnine's Context Eng
 
 ## Installation
 
-### Option 1: Install script
-
-Run the install script to copy all plugin files into your Cursor configuration:
-
-```bash
-# Install for the current project (local scope)
-curl -fsSL https://raw.githubusercontent.com/tabnine/skills/main/scripts/install-cursor-plugin.sh | bash
-
-# Or install globally for all projects
-curl -fsSL https://raw.githubusercontent.com/tabnine/skills/main/scripts/install-cursor-plugin.sh | bash -s -- --global
-```
-
-After the script completes, open Cursor's MCP settings and enable the `tabnine-context` server.
-
-### Option 2: Manual install
-
-Copy `.mcp.json` to your project root or Cursor settings directory and set the required environment variables.
+Install via the Cursor plugin marketplace, or manually copy `.mcp.json` to your project root or Cursor settings directory and set the required environment variables. After copying, open Cursor's MCP settings and enable the `tabnine-context` server.
 
 ## Prerequisites
 
