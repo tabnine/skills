@@ -1,9 +1,6 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       version:
@@ -14,18 +11,18 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: github.actor != 'codota-builder'
+    if: github.actor != 'github-actions[bot]'
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_BUILDER_TOKEN }}
 
       - name: Setup git
         run: |
           set -e
-          git config --global user.email "builder+skip-ci@codota.com"
-          git config --global user.name "codota-builder"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
 
       - name: Resolve version
         run: |
@@ -49,10 +46,16 @@ jobs:
           echo "$NEW_VERSION" > VERSION
           echo "TAG=$NEW_VERSION" >> $GITHUB_ENV
 
+      - name: Update plugin versions
+        run: |
+          set -e
+          jq --arg v "${{ env.TAG }}" '.version = $v' plugins/claude/tabnine/.claude-plugin/plugin.json > /tmp/plugin.json && mv /tmp/plugin.json plugins/claude/tabnine/.claude-plugin/plugin.json
+          jq --arg v "${{ env.TAG }}" '.version = $v' plugins/cursor/tabnine/.cursor-plugin/plugin.json > /tmp/plugin.json && mv /tmp/plugin.json plugins/cursor/tabnine/.cursor-plugin/plugin.json
+
       - name: Commit and tag
         run: |
           set -e
-          git add VERSION
+          git add VERSION plugins/claude/tabnine/.claude-plugin/plugin.json plugins/cursor/tabnine/.cursor-plugin/plugin.json
           git commit -m "chore: bump version to ${{ env.TAG }} [skip ci]"
           git tag "v${{ env.TAG }}"
           git push origin HEAD
@@ -62,4 +65,3 @@ jobs:
         run: |
           echo "### Release v${{ env.TAG }}" >> $GITHUB_STEP_SUMMARY
           echo "- Tagged \`v${{ env.TAG }}\` and pushed to git" >> $GITHUB_STEP_SUMMARY
-          echo "- Released \`tabnine_skills_version:${{ env.TAG }}\` to self-hosted-update-service" >> $GITHUB_STEP_SUMMARY
