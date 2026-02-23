@@ -4,23 +4,33 @@ set -euo pipefail
 REPO="https://github.com/tabnine/skills"
 PLUGIN_PATH="plugins/cursor/tabnine"
 
-# Default to local repo scope; pass --global to install into ~/.cursor
-if [[ "${1:-}" == "--global" ]]; then
-  CURSOR_DIR="$HOME/.cursor"
-  echo "Scope: global (~/.cursor)"
+# Parse flags
+CURSOR_DIR="$(pwd)/.cursor"
+LOCAL_SOURCE=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --global) CURSOR_DIR="$HOME/.cursor" ;;
+    --local)  LOCAL_SOURCE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/$PLUGIN_PATH" ;;
+    *)        true ;;
+  esac
+done
+
+echo "Scope: $CURSOR_DIR"
+
+if [[ -n "$LOCAL_SOURCE" ]]; then
+  echo "Source: local ($LOCAL_SOURCE)"
+  PLUGIN_DIR="$LOCAL_SOURCE"
 else
-  CURSOR_DIR="$(pwd)/.cursor"
-  echo "Scope: local ($CURSOR_DIR)"
+  # Clone into a temp dir and clean up on exit
+  TMP=$(mktemp -d)
+  trap 'rm -rf "$TMP"' EXIT
+
+  echo "Cloning $REPO ..."
+  git clone --depth 1 --quiet "$REPO" "$TMP"
+
+  PLUGIN_DIR="$TMP/$PLUGIN_PATH"
 fi
-
-# Clone into a temp dir and clean up on exit
-TMP=$(mktemp -d)
-trap 'rm -rf "$TMP"' EXIT
-
-echo "Cloning $REPO ..."
-git clone --depth 1 --quiet "$REPO" "$TMP"
-
-PLUGIN_DIR="$TMP/$PLUGIN_PATH"
 
 # --- Agents ---
 if [ -d "$PLUGIN_DIR/agents" ]; then
