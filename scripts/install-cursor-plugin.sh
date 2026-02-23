@@ -9,6 +9,9 @@
 #
 # --local reads plugin files directly from the local skills repo instead of cloning from GitHub.
 # Useful during development to test changes without pushing first.
+# When calling from another repo, use the full path to the script:
+#   bash /path/to/skills/scripts/install-cursor-plugin.sh --local
+# The script installs into the current working directory's .cursor/ folder.
 set -euo pipefail
 
 REPO="https://github.com/tabnine/skills"
