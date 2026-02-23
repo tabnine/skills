@@ -61,6 +61,20 @@ jobs:
           git push origin HEAD
           git push origin "v${{ env.TAG }}"
 
+      - name: Update tabnine_skills_version in self-hosted-update-service
+        env:
+          GH_TOKEN: ${{ secrets.GH_BUILDER_TOKEN }}
+        run: |
+          set -e
+          git clone --depth 1 https://x-access-token:${{ secrets.GH_BUILDER_TOKEN }}@github.com/tabnine/self-hosted-update-service.git /tmp/sus
+          cd /tmp/sus
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          yq -i '.tabnine_skills_version = "${{ env.TAG }}"' latest-artifact.yml
+          git add latest-artifact.yml
+          git commit -m "[Automatic] Release tabnine_skills_version version ${{ env.TAG }}"
+          git push
+
       - name: Summary
         run: |
           echo "### Release v${{ env.TAG }}" >> $GITHUB_STEP_SUMMARY
