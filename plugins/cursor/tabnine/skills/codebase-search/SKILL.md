@@ -21,4 +21,4 @@ The `tabnine-context` MCP server exposes tools for:
 - **File access** — browse repo structure, fetch file contents
 - **API discovery** — search OpenAPI specs and service summaries, query specs, grep assets
 
-Always start with semantic search to cast a wide net, then narrow down with symbol or file tools. If the first search doesn't return useful results, try different queries or filters before giving up. Cross-reference multiple repos when investigating service interactions.
+Cast a wide net first using semantic search and file search, then narrow down with symbol tools. If the first search doesn't return useful results, try different queries or filters before giving up. Cross-reference multiple repos when investigating service interactions.
