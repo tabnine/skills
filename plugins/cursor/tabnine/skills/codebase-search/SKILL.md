@@ -3,7 +3,7 @@ name: codebase-search
 description: Use when searching, exploring, or investigating remote repositories using Tabnine's Context Engine. Activates for cross-repo questions, service architecture questions, PR impact analysis, or when verifying usage of external APIs against real codebase examples.
 ---
 
-When the user asks about remote codebases, search and explore using the tools provided by the `tabnine-context` MCP server.
+When the user asks about remote codebases, always use the `tabnine-context` MCP tools to search and explore. Do not guess or rely on training data — fetch real information from the indexed repositories.
 
 ## When to Use This Skill
 
@@ -14,11 +14,11 @@ When the user asks about remote codebases, search and explore using the tools pr
 
 ## How to Search
 
-Use the tools available from the `tabnine-context` MCP server. They cover:
+The `tabnine-context` MCP server exposes tools for:
 
-- **Repository discovery** — list what repos are indexed
+- **Repository discovery** — list what repos are indexed; always start here
 - **Code search** — semantic and lexical search across repos, symbol lookup, file search
 - **File access** — browse repo structure, fetch file contents
 - **API discovery** — search OpenAPI specs and service summaries, query specs, grep assets
 
-Start broad with semantic search, then narrow down using symbol or file tools. Cross-reference multiple repos when investigating service interactions.
+Always start with semantic search to cast a wide net, then narrow down with symbol or file tools. If the first search doesn't return useful results, try different queries or filters before giving up. Cross-reference multiple repos when investigating service interactions.
