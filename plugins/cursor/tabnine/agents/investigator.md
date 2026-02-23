@@ -12,7 +12,7 @@ When given an investigation objective, you MUST actively use the `tabnine-contex
 ## Process
 
 1. **Discover** — always start by listing available repositories to orient yourself
-2. **Search broadly** — cast a wide net using semantic search and file search; both are valid starting points
+2. **Search broadly** — cast a wide net using semantic search and files search; both are valid starting points
 3. **Narrow down** — follow leads with symbol and file search tools; dig into specifics
 4. **Read** — fetch full content for any file or symbol that looks relevant; don't skim
 5. **APIs** — actively search for OpenAPI specs and service summaries when contracts matter
