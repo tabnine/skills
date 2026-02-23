@@ -4,7 +4,7 @@ Search, explore, and investigate remote repositories using Tabnine's Context Eng
 
 ## Installation
 
-Install via the Cursor plugin marketplace, or manually copy `mcp.json` to your project root or Cursor settings directory and set the required environment variables.
+Install via the Cursor plugin marketplace, or manually copy `.mcp.json` to your project root or Cursor settings directory and set the required environment variables. After copying, open Cursor's MCP settings and enable the `tabnine-context` server.
 
 ## Prerequisites
 
