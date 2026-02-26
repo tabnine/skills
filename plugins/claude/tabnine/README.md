@@ -7,7 +7,8 @@ Search, explore, and investigate remote repositories using Tabnine's Context Eng
 ### From Marketplace
 
 ```bash
-claude plugin add tabnine
+claude plugin marketplace add tabnine/skills
+claude plugin install tabnine
 ```
 
 ### Manual Installation

@@ -30,7 +30,8 @@ export TABNINE_TOKEN="your-personal-access-token"
 ### Claude Code
 
 ```bash
-claude plugin add tabnine
+claude plugin marketplace add tabnine/skills
+claude plugin install tabnine
 ```
 
 Then ask Claude about remote repos or use the `/investigate` command:
