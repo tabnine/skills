@@ -1,6 +1,14 @@
-# Context Engine CLI
+---
+name: ctx
+description: >
+  Query the Context Engine knowledge graph — investigate services, check blast
+  radius, search entities, manage Jira/Linear issues, and assess change risk.
+  Use when working with service architecture, dependencies, incidents, or
+  project management.
+allowed-tools: Bash(ctx-cli:*)
+---
 
-Use `ctx-cli` to query the Context Engine knowledge graph — investigate services, check blast radius, search entities, manage Jira/Linear issues, and assess change risk.
+# Context Engine CLI
 
 ## Prerequisites
 
