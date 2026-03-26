@@ -1,0 +1,9 @@
+{
+  "name": "ctx",
+  "description": "Query the Context Engine knowledge graph from your agent — investigate services, check blast radius, search entities, manage Jira/Linear issues, and assess change risk via the ctx-cli.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Tabnine",
+    "email": "support@tabnine.com"
+  }
+}
