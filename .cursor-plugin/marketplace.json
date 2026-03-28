@@ -8,12 +8,14 @@
     {
       "name": "tabnine",
       "description": "Search, explore, and investigate your team's remote repositories using Tabnine's Context Engine.",
-      "version": "1.0.0",
+      "version": "0.1.4",
       "author": {
         "name": "Tabnine"
       },
       "category": "development",
-      "source": "./plugins/claude/tabnine"
+      "keywords": ["tabnine", "context-engine", "remote-repos", "code-search", "mcp"],
+      "logo": "assets/logo.svg",
+      "source": "./plugins/cursor/tabnine"
     },
     {
       "name": "ctx",
@@ -23,7 +25,8 @@
         "name": "Tabnine"
       },
       "category": "development",
-      "source": "./plugins/claude/ctx"
+      "keywords": ["ctx", "context-engine", "knowledge-graph", "service-investigation"],
+      "source": "./plugins/cursor/ctx"
     }
   ]
 }
