@@ -1,15 +1,15 @@
 # Tabnine Skills
 
-Agent skills, tools, and integrations for AI coding agents — enabling semantic code search, coding guidelines enforcement, and Context Engine knowledge graph access across Claude Code, Cursor, and Gemini CLI.
+Agent skills, tools, and integrations for AI coding agents — enabling semantic code search, coding guidelines enforcement, and Context Engine knowledge graph access across Claude Code, Cursor, Gemini CLI, and Tabnine agent.
 
 ## Plugins
 
-This repo ships **two independent plugins** plus standalone Gemini skills. Install what you need:
+This repo ships **two independent plugins** with support for four agents. Install what you need:
 
-| Plugin | What it does | Claude Code | Cursor | Gemini CLI |
-|--------|-------------|-------------|--------|------------|
-| **tabnine** | Semantic code search across remote repos, coding guidelines | `claude plugin add tabnine/skills` | Marketplace | `gemini skills install` |
-| **ctx** | Query the Context Engine knowledge graph — investigate services, blast radius, Jira, incidents | `claude plugin add tabnine/skills:ctx` | Marketplace | `gemini skills install` |
+| Plugin | What it does | Claude Code | Cursor | Gemini CLI | Tabnine Agent |
+|--------|-------------|-------------|--------|------------|---------------|
+| **tabnine** | Semantic code search across remote repos, coding guidelines | `claude plugin add tabnine/skills` | Marketplace | `gemini skills install` | `tabnine skills install` |
+| **ctx** | Query the Context Engine knowledge graph — investigate services, blast radius, Jira, incidents | `claude plugin add tabnine/skills:ctx` | Marketplace | `gemini skills install` | `tabnine skills install` |
 
 ## Quick Start
 
@@ -54,6 +54,19 @@ gemini skills install https://github.com/tabnine/skills.git --path plugins/gemin
 
 # Context Engine CLI
 gemini skills install https://github.com/tabnine/skills.git --path plugins/gemini/ctx
+```
+
+### Tabnine Agent
+
+```bash
+# Context Engine CLI
+tabnine skills install https://github.com/tabnine/skills.git --path plugins/tabnine/ctx
+
+# Codebase search
+tabnine skills install https://github.com/tabnine/skills.git --path plugins/tabnine/codebase-search
+
+# Coding guidelines
+tabnine skills install https://github.com/tabnine/skills.git --path plugins/tabnine/coding-guidelines
 ```
 
 ## Prerequisites
@@ -183,12 +196,15 @@ tabnine-skills/
 │   │       ├── .cursor-plugin/plugin.json
 │   │       ├── rules/ctx.mdc
 │   │       └── skills/ctx/SKILL.md
-│   └── gemini/
-│       ├── tabnine/                  # Standalone Gemini skills
-│       │   ├── codebase-search/SKILL.md
-│       │   └── coding-guidelines/SKILL.md
-│       └── ctx/                      # Standalone ctx skill
-│           └── SKILL.md
+│   ├── gemini/                       # Gemini CLI skills
+│   │   ├── tabnine/
+│   │   │   ├── codebase-search/SKILL.md
+│   │   │   └── coding-guidelines/SKILL.md
+│   │   └── ctx/SKILL.md
+│   └── tabnine/                      # Tabnine agent skills
+│       ├── ctx/SKILL.md
+│       ├── codebase-search/SKILL.md
+│       └── coding-guidelines/SKILL.md
 └── scripts/
     ├── validate-cursor-plugin.mjs
     └── install-cursor-plugin.sh
