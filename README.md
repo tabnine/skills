@@ -90,7 +90,7 @@ export CTX_API_KEY="ctx_..."
 The ctx plugin also requires the `ctx-cli` binary. The skill teaches your agent how to download it, or install manually:
 
 ```bash
-curl -fsSL https://github.com/codota/ctx/releases/latest/download/ctx-cli-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/aarch64/arm64/') -o /usr/local/bin/ctx-cli && chmod +x /usr/local/bin/ctx-cli
+curl -fsSL https://github.com/tabnine/skills/releases/latest/download/ctx-cli-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/aarch64/arm64/') -o /usr/local/bin/ctx-cli && chmod +x /usr/local/bin/ctx-cli
 ```
 
 ## Tabnine Plugin

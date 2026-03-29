@@ -5,7 +5,6 @@ description: >
   radius, search entities, manage Jira/Linear issues, and assess change risk.
   Use when working with service architecture, dependencies, incidents, or
   project management.
-allowed-tools: Bash(ctx-cli:*)
 ---
 
 # Context Engine CLI
