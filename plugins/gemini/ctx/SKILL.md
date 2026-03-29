@@ -14,7 +14,7 @@ description: >
 If `ctx-cli` is not installed, download it:
 
 ```bash
-curl -fsSL https://github.com/codota/ctx/releases/latest/download/ctx-cli-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/aarch64/arm64/') -o /usr/local/bin/ctx-cli && chmod +x /usr/local/bin/ctx-cli
+curl -fsSL https://github.com/tabnine/skills/releases/latest/download/ctx-cli-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/aarch64/arm64/') -o /usr/local/bin/ctx-cli && chmod +x /usr/local/bin/ctx-cli
 ```
 
 Set your API key:
