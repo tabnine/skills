@@ -16,15 +16,12 @@ This repo ships **two independent plugins** with support for four agents. Instal
 ### Claude Code
 
 ```bash
-# Install the Tabnine plugin (codebase search + coding guidelines)
-claude plugin add tabnine/skills
+# 1. Add the marketplace (one time)
+claude plugin marketplace add tabnine/skills
 
-# Install the ctx plugin (Context Engine CLI)
-claude plugin add tabnine/skills:ctx
-
-# Or install both
-claude plugin add tabnine/skills
-claude plugin add tabnine/skills:ctx
+# 2. Install plugins
+claude plugin install tabnine       # codebase search + coding guidelines
+claude plugin install ctx@tabnine   # Context Engine CLI
 ```
 
 ### Cursor
