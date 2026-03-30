@@ -81,6 +81,7 @@ export TABNINE_TOKEN="your-personal-access-token"
 
 ```bash
 export CTX_API_URL="https://ctx.tabnine.com"
+# Any of these work: CTX_API_KEY, TABNINE_TOKEN, or CTX_TOKEN
 export CTX_API_KEY="ctx_..."
 ```
 
