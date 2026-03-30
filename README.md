@@ -8,23 +8,20 @@ This repo ships **two independent plugins** with support for four agents. Instal
 
 | Plugin | What it does | Claude Code | Cursor | Gemini CLI | Tabnine Agent |
 |--------|-------------|-------------|--------|------------|---------------|
-| **tabnine** | Semantic code search across remote repos, coding guidelines | `claude plugin add tabnine/skills` | Marketplace | `gemini skills install` | `tabnine skills install` |
-| **ctx** | Query the Context Engine knowledge graph — investigate services, blast radius, Jira, incidents | `claude plugin add tabnine/skills:ctx` | Marketplace | `gemini skills install` | `tabnine skills install` |
+| **tabnine** | Semantic code search across remote repos, coding guidelines | `claude plugin install tabnine` | Marketplace | `gemini skills install` | `tabnine skills install` |
+| **ctx** | Query the Context Engine knowledge graph — investigate services, blast radius, Jira, incidents | `claude plugin install ctx@tabnine` | Marketplace | `gemini skills install` | `tabnine skills install` |
 
 ## Quick Start
 
 ### Claude Code
 
 ```bash
-# Install the Tabnine plugin (codebase search + coding guidelines)
-claude plugin add tabnine/skills
+# 1. Add the marketplace (one time)
+claude plugin marketplace add tabnine/skills
 
-# Install the ctx plugin (Context Engine CLI)
-claude plugin add tabnine/skills:ctx
-
-# Or install both
-claude plugin add tabnine/skills
-claude plugin add tabnine/skills:ctx
+# 2. Install plugins
+claude plugin install tabnine       # codebase search + coding guidelines
+claude plugin install ctx@tabnine   # Context Engine CLI
 ```
 
 ### Cursor
@@ -84,6 +81,7 @@ export TABNINE_TOKEN="your-personal-access-token"
 
 ```bash
 export CTX_API_URL="https://ctx.tabnine.com"
+# Any of these work: CTX_API_KEY, TABNINE_TOKEN, or CTX_TOKEN
 export CTX_API_KEY="ctx_..."
 ```
 
