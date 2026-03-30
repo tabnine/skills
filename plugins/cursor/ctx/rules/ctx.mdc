@@ -1,0 +1,6 @@
+---
+description: Use Context Engine CLI to query knowledge graph, investigate services, and manage issues.
+alwaysApply: true
+---
+
+When you need information about services, dependencies, incidents, or project management, use the `ctx-cli` CLI rather than guessing from training data. See the `ctx` skill for detailed commands and workflows.
