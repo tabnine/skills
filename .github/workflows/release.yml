@@ -49,19 +49,34 @@ jobs:
       - name: Update plugin versions
         run: |
           set -e
-          jq --arg v "${{ env.TAG }}" '.version = $v' plugins/claude/tabnine/.claude-plugin/plugin.json > /tmp/plugin.json && mv /tmp/plugin.json plugins/claude/tabnine/.claude-plugin/plugin.json
-          jq --arg v "${{ env.TAG }}" '.version = $v' plugins/cursor/tabnine/.cursor-plugin/plugin.json > /tmp/plugin.json && mv /tmp/plugin.json plugins/cursor/tabnine/.cursor-plugin/plugin.json
+          for f in plugins/claude/tabnine/.claude-plugin/plugin.json \
+                   plugins/cursor/tabnine/.cursor-plugin/plugin.json \
+                   plugins/claude/ctx/.claude-plugin/plugin.json \
+                   plugins/cursor/ctx/.cursor-plugin/plugin.json; do
+            if [ -f "$f" ]; then
+              jq --arg v "${{ env.TAG }}" '.version = $v' "$f" > /tmp/plugin.json && mv /tmp/plugin.json "$f"
+            fi
+          done
 
       - name: Commit and tag
         run: |
           set -e
-          git add VERSION plugins/claude/tabnine/.claude-plugin/plugin.json plugins/cursor/tabnine/.cursor-plugin/plugin.json
+          git add -A
           git commit -m "chore: bump version to ${{ env.TAG }} [skip ci]"
           git tag "v${{ env.TAG }}"
           git push origin HEAD
           git push origin "v${{ env.TAG }}"
 
+      - name: Create GitHub release
+        run: |
+          gh release create "v${{ env.TAG }}" \
+            --title "v${{ env.TAG }}" \
+            --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Summary
         run: |
           echo "### Release v${{ env.TAG }}" >> $GITHUB_STEP_SUMMARY
           echo "- Tagged \`v${{ env.TAG }}\` and pushed to git" >> $GITHUB_STEP_SUMMARY
+          echo "- Created GitHub release \`v${{ env.TAG }}\`" >> $GITHUB_STEP_SUMMARY
