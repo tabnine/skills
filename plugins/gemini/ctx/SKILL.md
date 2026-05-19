@@ -12,16 +12,34 @@ description: >
 ## Prerequisites
 
 If `ctx-cli` is not installed, download it:
-
 ```bash
-curl -fsSL https://github.com/tabnine/skills/releases/latest/download/ctx-cli-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/aarch64/arm64/') -o /usr/local/bin/ctx-cli && chmod +x /usr/local/bin/ctx-cli
+curl -fsSL https://github.com/tabnine/skills/releases/latest/download/ctx-cli-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/aarch64/arm64/;s/x86_64/x64/') -o /usr/local/bin/ctx-cli && chmod +x /usr/local/bin/ctx-cli
 ```
 
 Set your API key:
-
 ```bash
 export CTX_API_KEY=<your-key>
 export CTX_API_URL=https://ctx.tabnine.com
+```
+
+## Stay current
+
+Once per session — before your first `ctx-cli` call — run the snippet below. It's idempotent, network-silent within 24h, and never blocks. If `tabnine/skills` has a newer release than the local CLI, it prints one stderr line and exits cleanly; pass the hint through to the user and move on with the task. If the network is unreachable or the tag can't be parsed, the snippet stays silent (no false-positive nags).
+
+State is cached at `~/.ctx/mcp-cache/version-check.json` (same dir as the MCP tool cache).
+
+```bash
+F=$HOME/.ctx/mcp-cache/version-check.json
+NOW=$(date +%s); MT=$(stat -f %m "$F" 2>/dev/null || stat -c %Y "$F" 2>/dev/null || echo 0)
+if [ ! -f "$F" ] || [ $((NOW-MT)) -ge 86400 ]; then
+  mkdir -p "$(dirname "$F")"
+  URL=$(curl -fsLI -o /dev/null -w '%{url_effective}' --max-time 8 https://github.com/tabnine/skills/releases/latest 2>/dev/null)
+  case "$URL" in */releases/tag/v*) LATEST="${URL##*/tag/v}" ;; *) LATEST="" ;; esac
+  LOCAL=$(ctx-cli --version 2>/dev/null)
+  printf '{"checkedAt":"%s","latest":"%s","local":"%s"}\n' "$(date -u +%FT%TZ)" "$LATEST" "$LOCAL" > "$F"
+  [ -n "$LATEST" ] && [ -n "$LOCAL" ] && [ "$LATEST" != "$LOCAL" ] && \
+    echo "ℹ️  ctx-cli v$LATEST available (you have v$LOCAL). Upgrade: curl -fsSL https://github.com/tabnine/skills/releases/latest/download/ctx-cli-\$(uname -s | tr A-Z a-z)-\$(uname -m | sed 's/aarch64/arm64/;s/x86_64/x64/') -o /usr/local/bin/ctx-cli && chmod +x /usr/local/bin/ctx-cli" >&2
+fi
 ```
 
 ## Quick start
@@ -43,7 +61,7 @@ ctx-cli mcp call get_change_confidence -p files=src/auth.ts -o json
 ## Discover tools
 
 ```bash
-# List all available tools (~100 tools available)
+# List all available tools
 ctx-cli mcp list -o json
 
 # Search for tools by keyword
@@ -82,5 +100,5 @@ ctx-cli mcp call get_incident_contacts -p serviceName=<name> -o json
 ```bash
 ctx-cli mcp call find_entities -p query="<search>" -o json
 ctx-cli mcp call find_entities -p query="<search>" -p entityTypes='["Service"]' -o json
-ctx-cli mcp call get_entity_by_id -p id=<entity-id> -o json
+ctx-cli mcp call get_entity_by_id -p entityId=<entity-id> -o json
 ```
