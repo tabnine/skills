@@ -7,9 +7,9 @@ This is the tool for any **security search** or **work to resolve security issue
 | Task | Tool |
 |---|---|
 | List CVEs in the resolution pipeline, with the suggested fix attached | `get_cve_resolution_status` |
-| Filter by severity / criticality (critical, high, …) | `find_entities` with `entityTypes=["Vulnerability"]` — severity is in `data.severity` |
+| Filter by severity / criticality (critical, high, …) | `get_cve_resolution_status` + post-filter `data.severity` with jq |
 | Look up the resolution for one specific CVE | `get_cve_resolution_status -p cveId=<id>` |
-| Vet a package before adding or upgrading it | `dependency_check` |
+| CWE / exploit maturity for a known CVE | `find_entities` with `entityTypes=["Vulnerability"]` |
 
 ## Triage the CVE inbox — `get_cve_resolution_status`
 
@@ -69,24 +69,6 @@ ctx-cli mcp call find_entities -p query="<cveId>" -p 'entityTypes=["Vulnerabilit
 
 The `Vulnerability` entity exposes `data.cwe`, `data.exploitMaturity` (`Proof of Concept`, `Mature`, …), `data.affectedVersions`, `data.isPatchable`, `data.isUpgradable`, `data.alertSource` (`snyk` \| `checkmarx`).
 
-## Vet a package — `dependency_check`
-
-Before adding or upgrading any dependency:
-
-```bash
-ctx-cli mcp call dependency_check -p packageName=lodash -p ecosystem=npm -o json
-```
-
-Returns current vulnerabilities, upgrade history, **revert detection** (`PREVIOUSLY_REVERTED` flag with `priorRevertCount` — "this bump broke CI N times before"), migration examples, and recommended internal alternatives. Replaces 5 primitives in one call.
-
-`ecosystem` accepts `npm`, `maven`, `pypi`, `go`. Omit to search all.
-
-## See also
-
-- `get_cve_blast_radius -p cveId=<id>` — transitive impact of one CVE (services + dep chains, up to 10 hops). Use when prioritizing the inbox.
-- `get_security_alerts -p repo=<org/name>` — raw vulnerability list for a single repository (vulnerabilities, not resolutions).
-- `list_all_vulnerabilities` — diagnostic enumeration of every `Vulnerability` entity in the graph.
-
 ## Do not call these
 
 The CVE auto-remediation pipeline runs these tools from background agents — calling them ad-hoc will trip dedup gates or write inconsistent state:
@@ -94,5 +76,3 @@ The CVE auto-remediation pipeline runs these tools from background agents — ca
 - `sync_snyk_vulnerabilities` / `reconcile_snyk_vulnerabilities`
 - `sync_checkmarx_vulnerabilities` / `reconcile_checkmarx_vulnerabilities`
 - `sweep_pending_cves`
-
-> Note: `get_cve_resolution_status` and `get_cve_blast_radius` are currently **tier-2** tools, so they will not appear in the default `ctx-cli mcp list` output. Use them by name as documented here.
