@@ -1,6 +1,6 @@
 ---
-description: Use Context Engine CLI to query knowledge graph, investigate services, and manage issues.
+description: Use Context Engine CLI to search the knowledge graph, traverse entity adjacency, and triage/resolve CVEs.
 alwaysApply: true
 ---
 
-When you need information about services, dependencies, incidents, or project management, use the `ctx-cli` CLI rather than guessing from training data. See the `ctx` skill for detailed commands and workflows.
+When you need to search the Context Engine knowledge graph, discover what an entity is connected to, or triage/resolve CVEs, use the `ctx-cli` CLI rather than guessing from training data. See the `ctx` skill — `codebase-search.md` for search and graph traversal, `security.md` for the CVE inbox with ready-to-apply fix diffs.
