@@ -8,24 +8,36 @@
     {
       "name": "tabnine",
       "description": "Search, explore, and investigate your team's remote repositories using Tabnine's Context Engine.",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "author": {
         "name": "Tabnine"
       },
       "category": "development",
-      "keywords": ["tabnine", "context-engine", "remote-repos", "code-search", "mcp"],
+      "keywords": [
+        "tabnine",
+        "context-engine",
+        "remote-repos",
+        "code-search",
+        "mcp"
+      ],
       "logo": "assets/logo.svg",
       "source": "./plugins/cursor/tabnine"
     },
     {
       "name": "ctx",
       "description": "Query the Context Engine knowledge graph via ctx-cli — semantic + lexical search across services and code, graph adjacency traversal, and CVE triage with ready-to-apply fix diffs.",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "author": {
         "name": "Tabnine"
       },
       "category": "development",
-      "keywords": ["ctx", "context-engine", "knowledge-graph", "codebase-search", "cve-resolution"],
+      "keywords": [
+        "ctx",
+        "context-engine",
+        "knowledge-graph",
+        "codebase-search",
+        "cve-resolution"
+      ],
       "source": "./plugins/cursor/ctx"
     }
   ]
