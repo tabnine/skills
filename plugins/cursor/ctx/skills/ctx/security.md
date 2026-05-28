@@ -43,27 +43,31 @@ Filters:
 | `repository` | e.g. `acme/order-service` |
 | `limit` | default 25, hard cap 500 |
 
-Each row's `data` includes `recommendedAction`, `prUrl`, `prHeadSha`, `agentRunId`, `resolutionRoute`, `status`. **When `recommendedActionKind=diff`, the diff is ready to apply as-is** — no transformation needed.
+Each row's `data` includes `severity`, `recommendedAction`, `recommendedActionKind`, `resolutionRoute`, `status`, `prUrl`, `prNumber`, `prHeadSha`, `fixType`, `fixVersion`, `agentRunId`, `resolvedAt`. **When `recommendedActionKind=diff`, the diff is ready to apply as-is** — no transformation needed.
 
 ## Filter by severity / criticality
 
-`get_cve_resolution_status` does not take a severity filter directly — severity lives on the `Vulnerability` entity. Workflow:
+`data.severity` is on every CVEResolution row directly — no extra lookup needed. `get_cve_resolution_status` does not yet expose a server-side severity filter, so post-filter client-side:
 
 ```bash
-# Step 1 — find high/critical vulnerabilities (semantic search; severity returned inline)
-ctx-cli mcp call find_entities -p query="critical" -p 'entityTypes=["Vulnerability"]' -p limit=50 -o json
+# All critical-severity resolutions
+ctx-cli mcp call get_cve_resolution_status -p limit=500 -o json \
+  | jq '.result | map(select(.data.severity == "critical"))'
 
-# Step 2 — for each cveId of interest, fetch the suggested resolution
-ctx-cli mcp call get_cve_resolution_status -p cveId=<cveId-from-step-1> -o json
+# High+critical CVEs still needing a human
+ctx-cli mcp call get_cve_resolution_status -p resolutionRoute=human_required -p limit=500 -o json \
+  | jq '.result | map(select(.data.severity == "critical" or .data.severity == "high"))'
 ```
 
-Each `Vulnerability` entity returns:
+Severity values: `low` \| `medium` \| `high` \| `critical`.
 
-- `data.severity` — `low` \| `medium` \| `high` \| `critical`
-- `data.exploitMaturity` — `Proof of Concept`, `Mature`, etc.
-- `data.cveId`, `data.cwe`, `data.affectedPackage`, `data.affectedVersions`, `data.ecosystem`, `data.isPatchable`, `data.isUpgradable`, `data.alertSource` (`snyk` \| `checkmarx`)
+For deeper context on the underlying vulnerability (CWE, exploit maturity, affected versions), follow the `cveId` to its `Vulnerability` entity:
 
-Sort or filter client-side (e.g. `jq 'map(select(.data.severity=="critical"))'`).
+```bash
+ctx-cli mcp call find_entities -p query="<cveId>" -p 'entityTypes=["Vulnerability"]' -o json
+```
+
+The `Vulnerability` entity exposes `data.cwe`, `data.exploitMaturity` (`Proof of Concept`, `Mature`, …), `data.affectedVersions`, `data.isPatchable`, `data.isUpgradable`, `data.alertSource` (`snyk` \| `checkmarx`).
 
 ## Vet a package — `dependency_check`
 
