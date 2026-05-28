@@ -48,10 +48,8 @@ jobs:
 
       - name: Update plugin versions
         # Bumps every plugin.json under `plugins/{claude,cursor}/<plugin>/.{claude,cursor}-plugin/`
-        # so a new plugin added to the monorepo (e.g. `ctx` was missing
-        # before this commit — it stayed at 0.1.0 from its initial PR
-        # while `tabnine` advanced to 0.2.0) is picked up automatically
-        # instead of silently drifting.
+        # and the marketplace entries that point at those plugins. CLI
+        # binaries are released independently under `ctx-cli-v*` tags.
         run: |
           set -e
           for f in plugins/claude/*/.claude-plugin/plugin.json plugins/cursor/*/.cursor-plugin/plugin.json; do
@@ -59,11 +57,16 @@ jobs:
             jq --arg v "${{ env.TAG }}" '.version = $v' "$f" > /tmp/plugin.json && mv /tmp/plugin.json "$f"
             echo "  bumped $f -> ${{ env.TAG }}"
           done
+          for f in .claude-plugin/marketplace.json .cursor-plugin/marketplace.json; do
+            [ -f "$f" ] || continue
+            jq --arg v "${{ env.TAG }}" '.plugins |= map(.version = $v)' "$f" > /tmp/marketplace.json && mv /tmp/marketplace.json "$f"
+            echo "  bumped $f plugin entries -> ${{ env.TAG }}"
+          done
 
       - name: Commit and tag
         run: |
           set -e
-          git add VERSION plugins/claude/*/.claude-plugin/plugin.json plugins/cursor/*/.cursor-plugin/plugin.json
+          git add VERSION plugins/claude/*/.claude-plugin/plugin.json plugins/cursor/*/.cursor-plugin/plugin.json .claude-plugin/marketplace.json .cursor-plugin/marketplace.json
           git commit -m "chore: bump version to ${{ env.TAG }} [skip ci]"
           git tag "v${{ env.TAG }}"
           git push origin HEAD
