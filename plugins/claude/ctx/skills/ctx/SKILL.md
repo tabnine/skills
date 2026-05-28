@@ -49,29 +49,66 @@ if [ ! -f "$F" ] || [ $((NOW-MT)) -ge 86400 ]; then
 fi
 ```
 
+## Pick a tool by intent
+
+Prefer a **composite (tier-1)** tool when one matches your intent — it bundles several primitive calls into one. Drop to primitives only when no composite covers the question or you need a specific narrow slice.
+
+| Intent | Tool | Tier | Notes |
+|---|---|---|---|
+| "How does service X work / what does it depend on / who owns it?" | `investigate_service -p serviceName=<name>` | tier-1 | Returns service, deps, dependents, ownership (team/oncall/slack/pagerduty), ADRs, runbooks, flows, incidents, Jira/GitLab issues in one call. Supports partial name match. |
+| "What breaks if I change X?" | `blast_radius -p target=<name>` | tier-1 | Param is `target` (not `serviceName`). Returns risk score (LOW/MEDIUM/HIGH), transitive dependents, affected flows, teams-to-notify, recommendations. |
+| "We're seeing errors in X — runbook + escalation" | `incident_response -p service=<name>` | tier-1 | Param is `service` (not `serviceName`). Optional `symptom=<text>` finds similar past incidents. |
+| "Is package X safe / should I use it?" | `dependency_check -p packageName=<name>` | tier-1 | Vulnerabilities + upgrade history + migration examples. Returns `[]` on tenants where package data isn't indexed. |
+| "How do I migrate from X to Y?" | `code_migration -p fromPackage=<pkg> -p toPackage=<pkg>` | tier-1 | Params are `fromPackage` / `toPackage`. Migration status, examples from teams who've done it. |
+| "How does the <X> business flow work?" | `understand_flow -p flowName=<name>` | tier-1 | Flow steps, services involved, related ADRs and incidents. Returns `[]` on tenants without indexed flows. |
+| "What's the context for this file?" | `get_file_context -p filepath=<path>` | tier-1 | Param is `filepath` (one word, lowercase). Returns ADRs, incidents, security patterns, experts, blast radius for the file's service. **Requires** `git-insights-analyzer` to have run on the repo — returns `[]` on tenants where it hasn't. |
+| "List CVEs with suggested fixes" | `get_cve_resolution_status` | tier-2 | The CVE inbox; `data.recommendedAction` carries the diff or advisory. See [`security.md`](./security.md). |
+| Find entities by natural-language query | `find_entities -p query=<text>` | tier-2 | Starting point for graph exploration. See [`codebase-search.md`](./codebase-search.md). |
+| Walk relationships from an entity | `traverse_edges -p entityId=<id>` | tier-2 | After `find_entities`. See [`codebase-search.md`](./codebase-search.md). |
+
 ## Quick start
 
 ```bash
-# Search the knowledge graph
-ctx-cli mcp call find_entities -p query="authentication" -o json
+# One-call investigation of a service
+ctx-cli mcp call investigate_service -p serviceName="CTX API Server" -o json
+
+# Semantic search across the graph (when no composite matches your intent)
+ctx-cli mcp call find_entities -p query="authentication service" -o json
 ```
 
 ## Discover tools
 
 ```bash
-# List all available tools
+# Default list = tier-1 composites only (25 tools — the curated entry points)
 ctx-cli mcp list -o json
 
-# Search for tools by keyword
-ctx-cli mcp list -s jira -o json
+# Full list including tier-2 primitives (~130 tools — graph queries, semantic_*,
+# data-source mutators, etc.). Use this when nothing in tier-1 matches the intent.
+ctx-cli mcp list --tier all -o json
 
-# See a tool's parameters before calling
+# Filter by keyword (across both tiers)
+ctx-cli mcp list --tier all -s jira -o json
+
+# See a tool's parameters before calling — check this whenever a call errors,
+# because some params disagree with intuitive naming (see "Common parameter gotchas" below).
 ctx-cli mcp describe <tool-name>
 ```
 
+### Common parameter gotchas
+
+These have bitten real callers — `mcp describe` lists them but they're easy to miss:
+
+- `get_entity_by_id` takes `entityId` (not `id`). Result is always an `array` (length 0 or 1), even though the docstring says it returns a single entity.
+- `blast_radius` takes `target` (not `serviceName`).
+- `incident_response` takes `service` (not `serviceName`). `investigate_service` does take `serviceName` — the inconsistency is real.
+- `code_migration` takes `fromPackage` and `toPackage` (not `from` / `to`).
+- `get_file_context` / `resolve_file_to_service` take `filepath` (one word, lowercase — not `filePath`).
+- `find_entities` and `search_knowledge` both take `entityTypes` as a **JSON-array string** (`'entityTypes=["Service"]'`) — despite `mcp describe` claiming comma-separated for `search_knowledge`. The comma form 500s.
+- `query_entities` takes `entityType` (singular) and `namePattern` as a **regex** (despite `mcp describe` advertising `*` wildcards). `*API*` → 500; `.*API.*` → works.
+
 ## Codebase search
 
-For searching the knowledge graph and the code it indexes — semantic queries, lexical lookups by type, and discovering entities adjacent to one you already have — see [`codebase-search.md`](./codebase-search.md). The standard loop is `find_entities` → `traverse_edges` → `get_entity_by_id`.
+For searching the knowledge graph and the code it indexes — semantic queries, lexical lookups by type, adjacency, and the two-service connection pattern — see [`codebase-search.md`](./codebase-search.md). The standard loop is `find_entities` → `traverse_edges` → `get_entity_by_id`.
 
 ## Security & CVEs
 
