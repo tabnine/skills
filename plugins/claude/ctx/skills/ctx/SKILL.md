@@ -1,10 +1,10 @@
 ---
 name: ctx
 description: >
-  Query the Context Engine knowledge graph — investigate services, check blast
-  radius, search entities, manage Jira/Linear issues, and assess change risk.
-  Use when working with service architecture, dependencies, incidents, or
-  project management.
+  Query the Context Engine knowledge graph — search entities and triage/resolve
+  CVEs (the suggested fix is embedded in each resolution entity, filterable by
+  severity). Use when searching the knowledge graph or working on security
+  issues.
 allowed-tools: Bash(ctx-cli:*)
 ---
 
@@ -52,17 +52,8 @@ fi
 ## Quick start
 
 ```bash
-# Investigate a service before making changes
-ctx-cli mcp call investigate_service -p serviceName=auth-service -o json
-
-# Check impact of a change
-ctx-cli mcp call blast_radius -p target=payment-api -p changeType=breaking -o json
-
 # Search the knowledge graph
 ctx-cli mcp call find_entities -p query="authentication" -o json
-
-# Get change confidence score
-ctx-cli mcp call get_change_confidence -p files=src/auth.ts -o json
 ```
 
 ## Discover tools
@@ -78,29 +69,9 @@ ctx-cli mcp list -s jira -o json
 ctx-cli mcp describe <tool-name>
 ```
 
-## Service investigation
+## Security & CVEs
 
-```bash
-ctx-cli mcp call investigate_service -p serviceName=<name> -o json
-ctx-cli mcp call blast_radius -p target=<name> -p changeType=breaking -o json
-ctx-cli mcp call get_service_dependencies -p serviceName=<name> -o json
-ctx-cli mcp call get_service_dependents -p serviceName=<name> -o json
-```
-
-## Jira
-
-```bash
-ctx-cli mcp call get_jira_issue -p issueKey=ENG-123 -o json
-ctx-cli mcp call create_jira_issue --json '{"summary":"Fix auth timeout","projectKey":"ENG","issueType":"Bug"}' -o json
-ctx-cli mcp call transition_jira_issue -p issueKey=ENG-123 -p status="In Progress" -o json
-```
-
-## Incident response
-
-```bash
-ctx-cli mcp call incident_response -p serviceName=<name> -o json
-ctx-cli mcp call get_incident_contacts -p serviceName=<name> -o json
-```
+For any security search or work resolving CVEs — including severity-filtered queries and the suggested-resolution diff attached to each entity — see [`security.md`](./security.md). The core tool is `get_cve_resolution_status` (the CVE inbox with `data.recommendedAction` carrying the ready-to-apply fix).
 
 ## Entity search
 
