@@ -85,10 +85,14 @@ export CTX_API_URL="https://ctx.tabnine.com"
 export CTX_API_KEY="ctx_..."
 ```
 
-The ctx plugin also requires the `ctx-cli` binary. The skill teaches your agent how to download it, or install manually:
+The ctx plugin also requires the `ctx-cli` binary. The skill teaches your agent how to download the newest CLI-scoped release, or install manually:
 
 ```bash
-curl -fsSL https://github.com/tabnine/skills/releases/latest/download/ctx-cli-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/aarch64/arm64/;s/x86_64/x64/') -o /usr/local/bin/ctx-cli && chmod +x /usr/local/bin/ctx-cli
+RELEASES=$(curl -fsSL --max-time 8 'https://api.github.com/repos/tabnine/skills/releases?per_page=100')
+TAG=$(printf '%s\n' "$RELEASES" | tr '{' '\n' | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\(ctx-cli-v[0-9][^"]*\)".*/\1/p' | head -1)
+[ -n "$TAG" ] || TAG=$(printf '%s\n' "$RELEASES" | tr '{' '\n' | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\(v[0-9][^"]*\)".*/\1/p' | head -1)
+test -n "$TAG" || { echo "No ctx-cli release found"; exit 1; }
+curl -fsSL "https://github.com/tabnine/skills/releases/download/$TAG/ctx-cli-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/aarch64/arm64/;s/x86_64/x64/')" -o /usr/local/bin/ctx-cli && chmod +x /usr/local/bin/ctx-cli
 ```
 
 ## Tabnine Plugin
