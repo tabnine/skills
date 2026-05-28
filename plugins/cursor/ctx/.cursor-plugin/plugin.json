@@ -1,7 +1,7 @@
 {
   "name": "ctx",
   "version": "0.3.0",
-  "description": "Query the Context Engine knowledge graph from your agent — investigate services, check blast radius, search entities, manage Jira/Linear issues, and assess change risk via the ctx-cli.",
+  "description": "Query the Context Engine knowledge graph from your agent via ctx-cli — semantic + lexical search across services and code, graph adjacency traversal, and CVE triage with ready-to-apply fix diffs.",
   "author": {
     "name": "Tabnine",
     "email": "support@tabnine.com"
@@ -10,7 +10,8 @@
     "ctx",
     "context-engine",
     "knowledge-graph",
-    "service-investigation",
+    "codebase-search",
+    "cve-resolution",
     "mcp"
   ]
 }

@@ -1,10 +1,10 @@
 ---
 name: ctx
 description: >
-  Query the Context Engine knowledge graph — search entities and triage/resolve
-  CVEs (the suggested fix is embedded in each resolution entity, filterable by
-  severity). Use when searching the knowledge graph or working on security
-  issues.
+  Query the Context Engine knowledge graph — semantic + lexical search, graph
+  adjacency traversal, and CVE triage/resolution. Use when searching the
+  codebase or graph, exploring what an entity is connected to, or working on
+  security issues.
 ---
 
 # Context Engine CLI
@@ -68,14 +68,10 @@ ctx-cli mcp list -s jira -o json
 ctx-cli mcp describe <tool-name>
 ```
 
+## Codebase search
+
+For searching the knowledge graph and the code it indexes — semantic queries, lexical lookups by type, and discovering entities adjacent to one you already have — see [`codebase-search.md`](./codebase-search.md). The standard loop is `find_entities` → `traverse_edges` → `get_entity_by_id`.
+
 ## Security & CVEs
 
 For any security search or work resolving CVEs — including severity-filtered queries and the suggested-resolution diff attached to each entity — see [`security.md`](./security.md). The core tool is `get_cve_resolution_status` (the CVE inbox with `data.recommendedAction` carrying the ready-to-apply fix).
-
-## Entity search
-
-```bash
-ctx-cli mcp call find_entities -p query="<search>" -o json
-ctx-cli mcp call find_entities -p query="<search>" -p entityTypes='["Service"]' -o json
-ctx-cli mcp call get_entity_by_id -p entityId=<entity-id> -o json
-```

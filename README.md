@@ -9,7 +9,7 @@ This repo ships **two independent plugins** with support for four agents. Instal
 | Plugin | What it does | Claude Code | Cursor | Gemini CLI | Tabnine Agent |
 |--------|-------------|-------------|--------|------------|---------------|
 | **tabnine** | Semantic code search across remote repos, coding guidelines | `claude plugin install tabnine` | Marketplace | `gemini skills install` | `tabnine skills install` |
-| **ctx** | Query the Context Engine knowledge graph — investigate services, blast radius, Jira, incidents | `claude plugin install ctx@tabnine` | Marketplace | `gemini skills install` | `tabnine skills install` |
+| **ctx** | Query the Context Engine knowledge graph — semantic + lexical search, graph adjacency, CVE triage with ready-to-apply fix diffs | `claude plugin install ctx@tabnine` | Marketplace | `gemini skills install` | `tabnine skills install` |
 
 ## Quick Start
 
@@ -134,27 +134,29 @@ A read-only agent that performs deep investigation of remote repositories. It sy
 
 ### What it enables
 
-The ctx skill teaches your agent to use the Context Engine CLI (`ctx-cli`) to query the knowledge graph. Examples:
+The ctx skill teaches your agent to use the Context Engine CLI (`ctx-cli`) to search the knowledge graph and triage CVEs. Examples:
 
 ```bash
-# Investigate a service
-ctx-cli mcp call investigate_service -p serviceName=auth-service -o json
+# Semantic search — find entities by natural-language query
+ctx-cli mcp call find_entities -p query="authentication service" -p limit=5 -o json
 
-# Check blast radius before making changes
-ctx-cli mcp call blast_radius -p target=payment-api -p changeType=breaking -o json
+# Lexical search — enumerate entities by type
+ctx-cli mcp call query_entities -p entityType=Service -p limit=50 -o json
 
-# Search the knowledge graph
-ctx-cli mcp call find_entities -p query="authentication" -o json
+# Graph adjacency — what is this entity connected to?
+ctx-cli mcp call traverse_edges -p entityId=<id> -p direction=out -o json
 
-# Manage Jira issues
-ctx-cli mcp call get_jira_issue -p issueKey=ENG-123 -o json
+# CVE inbox — each row carries the suggested fix in data.recommendedAction
+ctx-cli mcp call get_cve_resolution_status -p status=fix_pending_review -o json
 
-# Incident response
-ctx-cli mcp call incident_response -p serviceName=auth-service -o json
-
-# Discover all 100+ available tools
+# Discover available tools
 ctx-cli mcp list
 ```
+
+The two sub-skills cover the verified flows:
+
+- **`codebase-search.md`** — semantic + lexical search across the graph, plus adjacency traversal from a known entity.
+- **`security.md`** — CVE triage via `get_cve_resolution_status`, with ready-to-apply diffs embedded in each entity.
 
 ### How it works
 
