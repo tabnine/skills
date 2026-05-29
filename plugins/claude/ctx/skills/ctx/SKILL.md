@@ -21,10 +21,32 @@ test -n "$TAG" || { echo "No ctx-cli release found"; exit 1; }
 curl -fsSL "https://github.com/tabnine/skills/releases/download/$TAG/ctx-cli-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/aarch64/arm64/;s/x86_64/x64/')" -o /usr/local/bin/ctx-cli && chmod +x /usr/local/bin/ctx-cli
 ```
 
-Set your API key:
+Configure the API URL and credentials. ctx-cli reads these from environment variables and/or a config file at `~/.ctx/config.yaml`. Env vars override config when both are set.
+
+**ctx-native API key (`ctx_...`) — env-only works:**
 ```bash
-export CTX_API_KEY=<your-key>
 export CTX_API_URL=https://ctx.tabnine.com
+export CTX_API_KEY=ctx_...
+```
+
+**Tabnine PAT (`t9u_...`) — requires config.yaml for the `x-auth-type` header:**
+
+The token itself can come from env (`TABNINE_TOKEN` or `CTX_TOKEN`) or from config, but custom headers can only be set in config — ctx-cli has no env var that maps to headers. So Tabnine PATs need at least one `ctx-cli config set-header` call.
+
+```bash
+ctx-cli config init                                  # interactive: prompts for url + key
+ctx-cli config set api_url https://ctx.tabnine.com   # or set fields individually
+ctx-cli config set api_key t9u_...
+ctx-cli config set-header x-auth-type tabnine        # required for Tabnine PATs
+```
+
+Env vars ctx-cli recognizes (checked in this order for the bearer token): `CTX_API_KEY` → `TABNINE_TOKEN` → `CTX_TOKEN`. Plus `CTX_API_URL` for the URL.
+
+Inspect or manage profiles:
+```bash
+ctx-cli config list                  # show profiles, active profile, masked secrets
+ctx-cli config use-profile <name>    # switch active profile
+ctx-cli config remove-header <key>   # remove a stored header
 ```
 
 ## Stay current
