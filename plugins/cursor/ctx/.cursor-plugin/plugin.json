@@ -1,6 +1,6 @@
 {
   "name": "ctx",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Query the Context Engine knowledge graph from your agent via ctx-cli — semantic + lexical search across services and code, graph adjacency traversal, and CVE triage with ready-to-apply fix diffs.",
   "author": {
     "name": "Tabnine",
