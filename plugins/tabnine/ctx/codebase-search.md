@@ -2,7 +2,7 @@
 
 Two distinct search layers live here:
 
-1. **Code search** — find the actual *source code* that does something (returns real file/line chunks). Reach for this whenever the answer is a **code location**. See [Code search](#code-search--actual-source-code-post-apicode-search) below.
+1. **Code search** — find the actual *source code* that does something (returns real file/line chunks). Reach for this whenever the answer is a **code location**. See [Code search](#code-search--actual-source-code-code_search) below.
 2. **Knowledge-graph search** — find *entities* (Services, Libraries, CodePatterns…) and their relationships. Reach for this for architecture/dependency questions where the answer is a graph entity, not a line of code.
 
 Before reaching for primitives, check whether a tier-1 composite already answers the question — see the intent table in [`SKILL.md`](./SKILL.md). For "how does this service work" or "what depends on this service," `investigate_service` is one call. Drop to the primitives below when no composite covers the shape of the question or you need a specific narrow slice.
