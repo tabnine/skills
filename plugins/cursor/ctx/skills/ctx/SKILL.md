@@ -62,6 +62,7 @@ Prefer a **composite (tier-1)** tool when one matches your intent — it bundles
 | "How does the <X> business flow work?" | `understand_flow -p flowName=<name>` | tier-1 | Flow steps, services involved, related ADRs and incidents. Returns `[]` on tenants without indexed flows. |
 | "What's the context for this file?" | `get_file_context -p filepath=<path>` | tier-1 | Param is `filepath` (one word, lowercase). Returns ADRs, incidents, security patterns, experts, blast radius for the file's service. **Requires** `git-insights-analyzer` to have run on the repo — returns `[]` on tenants where it hasn't. |
 | "List CVEs with suggested fixes" | `get_cve_resolution_status` | tier-2 | The CVE inbox; `data.recommendedAction` carries the diff or advisory. See [`security.md`](./security.md). |
+| **Find the code that does X / where is X implemented** (returns source chunks) | `POST $CTX_API_URL/api/code-search` | — | Not an MCP tool; the `ctx code search` CLI is broken (GET vs POST). Use `curl`. See [`codebase-search.md`](./codebase-search.md#code-search--actual-source-code-post-apicode-search). |
 | Find entities by natural-language query | `find_entities -p query=<text>` | tier-2 | Starting point for graph exploration. See [`codebase-search.md`](./codebase-search.md). |
 | Walk relationships from an entity | `traverse_edges -p entityId=<id>` | tier-2 | After `find_entities`. See [`codebase-search.md`](./codebase-search.md). |
 
@@ -107,7 +108,10 @@ These have bitten real callers — `mcp describe` lists them but they're easy to
 
 ## Codebase search
 
-For searching the knowledge graph and the code it indexes — semantic queries, lexical lookups by type, adjacency, and the two-service connection pattern — see [`codebase-search.md`](./codebase-search.md). The standard loop is `find_entities` → `traverse_edges` → `get_entity_by_id`.
+Two layers, both covered in [`codebase-search.md`](./codebase-search.md):
+
+- **Find actual source code** (the answer is a file/line) → `POST $CTX_API_URL/api/code-search` (curl; not an MCP tool, and the `ctx code search` CLI is broken — GET instead of POST). Returns ranked code chunks with `sourceUrl` deep links.
+- **Search the knowledge graph** (the answer is an entity/relationship) → semantic queries, lexical lookups by type, adjacency, and the two-service connection pattern. The standard loop is `find_entities` → `traverse_edges` → `get_entity_by_id`.
 
 ## Security & CVEs
 

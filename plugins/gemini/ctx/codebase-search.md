@@ -1,6 +1,9 @@
 # Codebase search
 
-This is the tool for any **search over the knowledge graph and the code it indexes** via `ctx-cli`. Three intents are covered: lexical search by type, semantic search by natural-language query, and adjacency — discovering entities directly connected to one you already have.
+Two distinct search layers live here:
+
+1. **Code search** — find the actual *source code* that does something (returns real file/line chunks). Reach for this whenever the answer is a **code location**. See [Code search](#code-search--actual-source-code-post-apicode-search) below.
+2. **Knowledge-graph search** — find *entities* (Services, Libraries, CodePatterns…) and their relationships. Reach for this for architecture/dependency questions where the answer is a graph entity, not a line of code.
 
 Before reaching for primitives, check whether a tier-1 composite already answers the question — see the intent table in [`SKILL.md`](./SKILL.md). For "how does this service work" or "what depends on this service," `investigate_service` is one call. Drop to the primitives below when no composite covers the shape of the question or you need a specific narrow slice.
 
@@ -8,6 +11,7 @@ Before reaching for primitives, check whether a tier-1 composite already answers
 
 | Task | Tool |
 |---|---|
+| **Find the code that does X / where is X implemented** (returns source chunks) | **`POST /api/code-search`** — see [Code search](#code-search--actual-source-code-post-apicode-search) |
 | Find entities by natural-language query ("authentication services", "rate limit code") | `find_entities` |
 | Broader semantic search across the whole graph (libraries, usages, patterns, …) | `search_knowledge` |
 | Lexical lookup by type + regex name pattern (all `Service`s, names matching `.*Service`) | `query_entities` |
@@ -16,7 +20,47 @@ Before reaching for primitives, check whether a tier-1 composite already answers
 | How are two specific services / repos connected? | See "Cross-service traversal" below |
 | Read or grep a file in an indexed repo I don't have checked out | `semantic_read_file` / `semantic_search_for_pattern` — but **probe first**, see "Optional indexers" below |
 
-The standard exploration loop is **`find_entities` → `traverse_edges` → `get_entity_by_id`**: semantic search to land on a starting entity, edge traversal to discover its neighborhood, then deep-read whichever neighbor matters.
+For **"find code"**, use Code search. For **graph exploration**, the standard loop is **`find_entities` → `traverse_edges` → `get_entity_by_id`**: semantic search to land on a starting entity, edge traversal to discover its neighborhood, then deep-read whichever neighbor matters.
+
+## Code search — actual source code (`POST /api/code-search`)
+
+This is the tool for **"find the code that does X" / "where is X implemented"**. It returns real source-code chunks — file path, line range, and the code itself — ranked by similarity across every indexed repo. Use it instead of the graph tools whenever the answer is a *code location* rather than a graph entity. It blends vector and keyword matching (`matchType` tells you which fired per result).
+
+> **Two warts:** Code search is **not exposed as an MCP tool**, and the `ctx code search` / `ctx code symbols` CLI subcommands are **broken** — they issue `GET /api/code-search?q=…` (and `GET /api/symbols`), but the live endpoint is **`POST`-only**, so both 404. Call the HTTP endpoint directly with `curl`, authenticating with the same `$CTX_API_KEY` / `$CTX_API_URL` the CLI already uses.
+
+```bash
+# Find code by natural language
+curl -s -X POST "$CTX_API_URL/api/code-search" \
+  -H "Authorization: Bearer $CTX_API_KEY" -H "Content-Type: application/json" \
+  -d '{"query":"authentication middleware","limit":20,"minSimilarity":0.3}'
+
+# Scope to one or more indexed repos, and/or to specific languages
+curl -s -X POST "$CTX_API_URL/api/code-search" \
+  -H "Authorization: Bearer $CTX_API_KEY" -H "Content-Type: application/json" \
+  -d '{"query":"retry with backoff","limit":10,"minSimilarity":0.3,
+       "languages":["typescript"],"dataSourceIds":["01518334-9f17-4761-a9ce-8cef1205d6a3"]}'
+```
+
+**Request body** (`query` is the only required field):
+
+| field | type | notes |
+|---|---|---|
+| `query` | string | natural-language query (required) |
+| `limit` | number | page size (UI default `20`) |
+| `offset` / `page` | number | pagination (`page` is 1-based) |
+| `minSimilarity` | number | UI default `0.3`; lower to widen, raise to tighten |
+| `languages` | string[] | filter by language, e.g. `["typescript"]` |
+| `dataSourceIds` | string[] | scope to specific indexed repos (the UI's "indices" filter) |
+
+**Each `results[]` row:** `filePath`, `startLine`, `endLine`, `language`, `symbolName` (may be null), `content` (the code), `similarity`, `matchType` (`vector` | `keyword`), `dataSourceId`, `dataSourceName`, `dataSourceType`, and `sourceUrl` (deep link to the exact lines on the host). Top level also carries `count`, `page`, `pageSize`, `hasMore`.
+
+**Check availability / discover indexed repos first** — this is also how you get the `dataSourceId`s for the `dataSourceIds` filter:
+
+```bash
+curl -s "$CTX_API_URL/api/code-search/status" -H "Authorization: Bearer $CTX_API_KEY"
+```
+
+Returns `available`, `totalChunks`, `totalDataSources`, and a `dataSources[]` list with per-repo `dataSourceName`, `dataSourceId`, `status` (`completed` | `indexing` | `failed`), and chunk counts. A repo whose `status` isn't `completed` (or whose `embeddedChunks` is `0`) won't return results yet.
 
 ## Semantic search — `find_entities`
 
