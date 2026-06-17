@@ -173,6 +173,7 @@ The sub-skills cover the verified flows:
 - **`codebase-search.md`** — semantic + lexical search across the graph, plus adjacency traversal from a known entity.
 - **`security.md`** — CVE triage via `get_cve_resolution_status`, with ready-to-apply diffs embedded in each entity.
 - **`coaching-guidelines.md`** — fetch and apply the org's managed coding guidelines via `get_coding_guidelines`, filtered by language / category / severity.
+- **`guideline-sources.md`** — inspect the discovered AI-guideline files across repos (CLAUDE.md / .cursorrules / AGENTS.md) via `get_guideline_sources` — coverage, cross-repo drift, and missing-file detection.
 
 ### How it works
 
