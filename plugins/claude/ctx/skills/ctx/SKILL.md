@@ -85,6 +85,7 @@ Prefer a **composite (tier-1)** tool when one matches your intent — it bundles
 | "How does the <X> business flow work?" | `understand_flow -p flowName=<name>` | tier-1 | Flow steps, services involved, related ADRs and incidents. Returns `[]` on tenants without indexed flows. |
 | "What's the context for this file?" | `get_file_context -p filepath=<path>` | tier-1 | Param is `filepath` (one word, lowercase). Returns ADRs, incidents, security patterns, experts, blast radius for the file's service. **Requires** `git-insights-analyzer` to have run on the repo — returns `[]` on tenants where it hasn't. |
 | "List CVEs with suggested fixes" | `get_cve_resolution_status` | tier-2 | The CVE inbox; `data.recommendedAction` carries the diff or advisory. See [`security.md`](./security.md). |
+| "What are our team's coding standards / does this code follow them?" | `get_coding_guidelines` | tier-2 | Managed coaching guidelines (returns markdown); filter by `language` / `category` / `severity`. See [`coaching-guidelines.md`](./coaching-guidelines.md). |
 | **Find the code that does X / where is X implemented** (returns source chunks) | `code_search -p query=<text>` | tier-2 | Hybrid vector+keyword search over indexed source; returns code chunks with `sourceUrl`. See [`codebase-search.md`](./codebase-search.md#code-search--actual-source-code-code_search). |
 | Find entities by natural-language query | `find_entities -p query=<text>` | tier-2 | Starting point for graph exploration. See [`codebase-search.md`](./codebase-search.md). |
 | Walk relationships from an entity | `traverse_edges -p entityId=<id>` | tier-2 | After `find_entities`. See [`codebase-search.md`](./codebase-search.md). |
@@ -139,3 +140,7 @@ Two layers, both covered in [`codebase-search.md`](./codebase-search.md):
 ## Security & CVEs
 
 For any security search or work resolving CVEs — including severity-filtered queries and the suggested-resolution diff attached to each entity — see [`security.md`](./security.md). The core tool is `get_cve_resolution_status` (the CVE inbox with `data.recommendedAction` carrying the ready-to-apply fix).
+
+## Coding guidelines
+
+To apply the org's **managed coding standards** when writing or reviewing code — fetch the rules first, filter by `language` / `category` / `severity`, and lead with the build-breakers — see [`coaching-guidelines.md`](./coaching-guidelines.md). The tool is `get_coding_guidelines` (a tier-2 coaching retriever that returns markdown).

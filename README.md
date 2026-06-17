@@ -168,10 +168,11 @@ ctx-cli mcp call get_cve_resolution_status -p status=fix_pending_review -o json
 ctx-cli mcp list
 ```
 
-The two sub-skills cover the verified flows:
+The sub-skills cover the verified flows:
 
 - **`codebase-search.md`** — semantic + lexical search across the graph, plus adjacency traversal from a known entity.
 - **`security.md`** — CVE triage via `get_cve_resolution_status`, with ready-to-apply diffs embedded in each entity.
+- **`coaching-guidelines.md`** — fetch and apply the org's managed coding guidelines via `get_coding_guidelines`, filtered by language / category / severity.
 
 ### How it works
 
