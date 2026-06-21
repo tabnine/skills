@@ -10,6 +10,8 @@ This is the tool for any **security search** or **work to resolve security issue
 | Filter by severity / criticality (critical, high, …) | `get_cve_resolution_status` + post-filter `data.severity` with jq |
 | Look up the resolution for one specific CVE | `get_cve_resolution_status -p cveId=<id>` |
 | CWE / exploit maturity for a known CVE | `find_entities` with `entityTypes=["Vulnerability"]` |
+| List **SAST** findings in the resolution pipeline, with the suggested fix attached | `get_sast_resolution_status` |
+| Look up the resolution for one specific SAST rule | `get_sast_resolution_status -p ruleId=<rule>` |
 
 ## Triage the CVE inbox — `get_cve_resolution_status`
 
@@ -69,10 +71,44 @@ ctx-cli mcp call find_entities -p query="<cveId>" -p 'entityTypes=["Vulnerabilit
 
 The `Vulnerability` entity exposes `data.cwe`, `data.exploitMaturity` (`Proof of Concept`, `Mature`, …), `data.affectedVersions`, `data.isPatchable`, `data.isUpgradable`, `data.alertSource` (`snyk` \| `checkmarx`).
 
+## Triage the SAST inbox — `get_sast_resolution_status`
+
+The SAST analog of `get_cve_resolution_status`, for **source-code** findings (Snyk Code / Checkmarx SAST) that the `sast-auto-resolver` agent has triaged. All filters are optional.
+
+```bash
+# Code-fix PRs awaiting review/merge
+ctx-cli mcp call get_sast_resolution_status -p resolutionRoute=auto_fix -p status=fix_pending_review -o json
+
+# Findings that need a human (manual triage queue)
+ctx-cli mcp call get_sast_resolution_status -p resolutionRoute=human_required -o json
+
+# Suppressed findings (false positive / not exploitable) — the reason is in data.justification
+ctx-cli mcp call get_sast_resolution_status -p resolutionRoute=not_applicable -o json
+
+# All resolutions for one SAST rule, or one repository
+ctx-cli mcp call get_sast_resolution_status -p ruleId=sql-injection -o json
+ctx-cli mcp call get_sast_resolution_status -p repository=acme/api-service -o json
+```
+
+Filters:
+
+| Param | Values |
+|---|---|
+| `status` | `resolved` \| `fix_pending_review` \| `fix_merged` \| `escalated` \| `failed` |
+| `resolutionRoute` | `auto_fix` \| `human_required` \| `not_applicable` |
+| `suppressionType` | `false_positive` \| `not_exploitable` \| `vulnerable_code_not_in_execute_path` \| `mitigated_elsewhere` \| `accepted_risk` |
+| `ruleId` | e.g. `sql-injection` |
+| `repository` | e.g. `acme/api-service` |
+| `file` | e.g. `src/services/user-service.ts` |
+| `limit` | default 25, hard cap 500 |
+
+Each row's `data` includes `ruleId`, `cwe`, `owasp`, `file`, `line`, `severity`, `engine` (`snyk` \| `checkmarx`), `fixDescription`, `prUrl`, `prNumber`, `recommendedAction`, `escalationReason`, `suppressionType`, `resolvedAt`. **Route 2 (`auto_fix`) fixes are code patches at `file:line`, not version bumps.** `data.severity` is on every row — post-filter client-side the same way as CVEs (`jq '.result | map(select(.data.severity == "critical"))'`).
+
 ## Do not call these
 
-The CVE auto-remediation pipeline runs these tools from background agents — calling them ad-hoc will trip dedup gates or write inconsistent state:
+The CVE and SAST auto-remediation pipelines run these tools from background agents — calling them ad-hoc will trip dedup gates or write inconsistent state:
 
 - `sync_snyk_vulnerabilities` / `reconcile_snyk_vulnerabilities`
 - `sync_checkmarx_vulnerabilities` / `reconcile_checkmarx_vulnerabilities`
 - `sweep_pending_cves`
+- `sweep_pending_sast`
