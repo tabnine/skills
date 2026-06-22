@@ -1,11 +1,24 @@
+---
+name: ctx-search
+description: >
+  Search a team's codebase and knowledge graph with ctx-cli — find where code is
+  implemented (code_search), find entities by natural-language query, and traverse
+  graph relationships between services, libraries, and code. Use to locate source
+  or explore what an entity connects to.
+allowed-tools: Bash(ctx-cli:*), Bash(curl:*)
+---
+
 # Codebase search
+
+> **Prerequisites:** requires `ctx-cli` installed and authenticated. If it isn't, or you
+> haven't run the once-per-session version check, see the [`ctx`](../ctx/SKILL.md) skill first.
 
 Two distinct search layers live here:
 
 1. **Code search** — find the actual *source code* that does something (returns real file/line chunks). Reach for this whenever the answer is a **code location**. See [Code search](#code-search--actual-source-code-code_search) below.
 2. **Knowledge-graph search** — find *entities* (Services, Libraries, CodePatterns…) and their relationships. Reach for this for architecture/dependency questions where the answer is a graph entity, not a line of code.
 
-Before reaching for primitives, check whether a tier-1 composite already answers the question — see the intent table in [`SKILL.md`](./SKILL.md). For "how does this service work" or "what depends on this service," `investigate_service` is one call. Drop to the primitives below when no composite covers the shape of the question or you need a specific narrow slice.
+Before reaching for primitives, check whether a tier-1 composite already answers the question — see the intent table in [`ctx`](../ctx/SKILL.md). For "how does this service work" or "what depends on this service," `investigate_service` is one call (see [`ctx-investigate`](../ctx-investigate/SKILL.md)). Drop to the primitives below when no composite covers the shape of the question or you need a specific narrow slice.
 
 ## When to reach for this
 
@@ -189,4 +202,4 @@ ctx-cli mcp call query_entities -p entityType=Repository -p 'namePattern=.*<repo
 
 Then feed the `dataSourceId` as `project_id` to `semantic_read_file` / `semantic_search_for_pattern`. If the probe call returned 500, fall back to local `grep` on a checked-out copy or to the graph-only loop (`find_entities` → `traverse_edges`) — graph adjacency captures the *fact* of a connection even when source-level inspection isn't available.
 
-When populated, `get_file_context` is a tier-1 composite that returns ADRs, incidents, security patterns, experts and blast radius for a file path. Worth trying first when working on a specific file.
+When populated, `get_file_context` is a tier-1 composite that returns ADRs, incidents, security patterns, experts and blast radius for a file path. Worth trying first when working on a specific file (see [`ctx-investigate`](../ctx-investigate/SKILL.md)).

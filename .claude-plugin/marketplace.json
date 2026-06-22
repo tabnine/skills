@@ -17,7 +17,7 @@
     },
     {
       "name": "ctx",
-      "description": "Query the Context Engine knowledge graph via ctx-cli — semantic + lexical search across services and code, graph adjacency traversal, and CVE triage with ready-to-apply fix diffs.",
+      "description": "Context Engine CLI (ctx-cli) as focused skills — code & knowledge-graph search, service investigation, CVE & SAST triage with ready-to-apply fixes, and coding-guideline checks.",
       "version": "0.8.0",
       "author": {
         "name": "Tabnine"

@@ -9,7 +9,7 @@ This repo ships **two independent plugins** with support for four agents. Instal
 | Plugin | What it does | Claude Code | Cursor | Gemini CLI | Tabnine Agent |
 |--------|-------------|-------------|--------|------------|---------------|
 | **tabnine** | Semantic code search across remote repos, coding guidelines | `claude plugin install tabnine` | Marketplace | `gemini skills install` | `tabnine skills install` |
-| **ctx** | Query the Context Engine knowledge graph — semantic + lexical search, graph adjacency, CVE triage with ready-to-apply fix diffs | `claude plugin install ctx@tabnine` | Marketplace | `gemini skills install` | `tabnine skills install` |
+| **ctx** | Context Engine CLI, split into focused skills — code/graph search, service investigation, CVE & SAST triage, and coding guidelines | `claude plugin install ctx@tabnine` | Marketplace | `gemini skills install` | `tabnine skills install` |
 
 ## Quick Start
 
@@ -49,15 +49,23 @@ gemini skills install https://github.com/tabnine/skills.git --path plugins/gemin
 # Coding guidelines
 gemini skills install https://github.com/tabnine/skills.git --path plugins/gemini/tabnine/coding-guidelines
 
-# Context Engine CLI
-gemini skills install https://github.com/tabnine/skills.git --path plugins/gemini/ctx
+# Context Engine CLI — install each ctx skill independently
+gemini skills install https://github.com/tabnine/skills.git --path plugins/gemini/ctx/ctx
+gemini skills install https://github.com/tabnine/skills.git --path plugins/gemini/ctx/ctx-search
+gemini skills install https://github.com/tabnine/skills.git --path plugins/gemini/ctx/ctx-security
+gemini skills install https://github.com/tabnine/skills.git --path plugins/gemini/ctx/ctx-guidelines
+gemini skills install https://github.com/tabnine/skills.git --path plugins/gemini/ctx/ctx-investigate
 ```
 
 ### Tabnine Agent
 
 ```bash
-# Context Engine CLI
-tabnine skills install https://github.com/tabnine/skills.git --path plugins/tabnine/ctx
+# Context Engine CLI — install each ctx skill independently
+tabnine skills install https://github.com/tabnine/skills.git --path plugins/tabnine/ctx/ctx
+tabnine skills install https://github.com/tabnine/skills.git --path plugins/tabnine/ctx/ctx-search
+tabnine skills install https://github.com/tabnine/skills.git --path plugins/tabnine/ctx/ctx-security
+tabnine skills install https://github.com/tabnine/skills.git --path plugins/tabnine/ctx/ctx-guidelines
+tabnine skills install https://github.com/tabnine/skills.git --path plugins/tabnine/ctx/ctx-investigate
 
 # Codebase search
 tabnine skills install https://github.com/tabnine/skills.git --path plugins/tabnine/codebase-search
@@ -149,7 +157,17 @@ A read-only agent that performs deep investigation of remote repositories. It sy
 
 ### What it enables
 
-The ctx skill teaches your agent to use the Context Engine CLI (`ctx-cli`) to search the knowledge graph and triage CVEs. Examples:
+The ctx plugin teaches your agent to use the Context Engine CLI (`ctx-cli`). It is split into a foundational skill plus focused domain skills, so each user intent triggers the right one independently:
+
+| Skill | What it covers |
+|-------|----------------|
+| **`ctx`** | Foundational — install, auth, version-check, tool discovery, routing, and the pick-a-tool-by-intent table. |
+| **`ctx-search`** | Find source code (`code_search`), find entities by natural language, and traverse graph relationships. |
+| **`ctx-investigate`** | Tier-1 composites — `investigate_service`, `blast_radius`, `incident_response`, `dependency_check`, `code_migration`, `understand_flow`, `get_file_context`. |
+| **`ctx-security`** | CVE and SAST resolution inboxes (`get_cve_resolution_status` / `get_sast_resolution_status`), each row carrying a ready-to-apply fix diff or advisory. |
+| **`ctx-guidelines`** | Managed coaching guidelines (`get_coding_guidelines`) plus discovered AI-guideline files (`get_guideline_sources`) — coverage and cross-repo drift. |
+
+Examples:
 
 ```bash
 # Semantic search — find entities by natural-language query
@@ -168,12 +186,7 @@ ctx-cli mcp call get_cve_resolution_status -p status=fix_pending_review -o json
 ctx-cli mcp list
 ```
 
-The sub-skills cover the verified flows:
-
-- **`codebase-search.md`** — semantic + lexical search across the graph, plus adjacency traversal from a known entity.
-- **`security.md`** — CVE triage via `get_cve_resolution_status`, with ready-to-apply diffs embedded in each entity.
-- **`coaching-guidelines.md`** — fetch and apply the org's managed coding guidelines via `get_coding_guidelines`, filtered by language / category / severity.
-- **`guideline-sources.md`** — inspect the discovered AI-guideline files across repos (CLAUDE.md / .cursorrules / AGENTS.md) via `get_guideline_sources` — coverage, cross-repo drift, and missing-file detection.
+Each domain skill loads in isolation and points back to the foundational `ctx` skill for the install/auth/version-check steps — the single source of truth, so the CLI bootstrap is never duplicated divergently across skills.
 
 ### How it works
 

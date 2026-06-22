@@ -1,6 +1,11 @@
 ---
-description: Use Context Engine CLI to search the knowledge graph, traverse entity adjacency, and triage/resolve CVEs.
+description: Use Context Engine CLI (ctx-cli) to search code & the knowledge graph, investigate services, triage/resolve CVE & SAST findings, and apply coding guidelines.
 alwaysApply: true
 ---
 
-When you need to search the Context Engine knowledge graph, discover what an entity is connected to, or triage/resolve CVEs, use the `ctx-cli` CLI rather than guessing from training data. See the `ctx` skill — `codebase-search.md` for search and graph traversal, `security.md` for the CVE inbox with ready-to-apply fix diffs.
+When a task involves a team's remote codebase, service architecture, security findings, or coding standards, use the `ctx-cli` CLI rather than guessing from training data. Start with the foundational `ctx` skill (install, auth, tool routing), then load the domain skill that matches the intent:
+
+- `ctx-search` — find where code is implemented (`code_search`), find entities by natural language, and traverse graph relationships.
+- `ctx-investigate` — service investigation, blast radius, incident response, dependency/migration checks, flow understanding (tier-1 composites).
+- `ctx-security` — the CVE and SAST resolution inboxes, each row carrying a ready-to-apply fix diff or advisory.
+- `ctx-guidelines` — managed coaching guidelines for writing/reviewing code, plus discovered AI-guideline files (CLAUDE.md/.cursorrules/AGENTS.md) coverage and drift.
