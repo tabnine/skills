@@ -1,4 +1,16 @@
+---
+name: ctx-security
+description: >
+  Triage and resolve security findings with ctx-cli — the CVE and SAST resolution
+  inboxes, each row carrying a ready-to-apply fix diff or advisory. Use for any
+  security search or CVE/SAST remediation work.
+allowed-tools: Bash(ctx-cli:*), Bash(curl:*)
+---
+
 # Security and CVE resolution
+
+> **Prerequisites:** requires `ctx-cli` installed and authenticated. If it isn't, or you
+> haven't run the once-per-session version check, see the [`ctx`](../ctx/SKILL.md) skill first.
 
 This is the tool for any **security search** or **work to resolve security issues** via `ctx-cli`. The centerpiece is `get_cve_resolution_status` — it returns the CVE inbox with the **suggested fix embedded in the entity**: each row's `data.recommendedAction` is either a ready-to-apply unified diff or a markdown advisory.
 

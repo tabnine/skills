@@ -1,14 +1,26 @@
 ---
 name: ctx
 description: >
-  Query the Context Engine knowledge graph — semantic + lexical search, graph
-  adjacency traversal, and CVE triage/resolution. Use when searching the
-  codebase or graph, exploring what an entity is connected to, or working on
-  security issues.
+  Set up and route Context Engine CLI (ctx-cli) work — install, authenticate,
+  check version, discover tools, and pick the right tool by intent. Start here
+  for anything involving ctx-cli or the Context Engine; it routes to the
+  ctx-search, ctx-security, ctx-guidelines, and ctx-investigate skills.
 allowed-tools: Bash(ctx-cli:*), Bash(curl:*)
 ---
 
 # Context Engine CLI
+
+This is the **foundational** skill for `ctx-cli`: install, auth, version-check, tool
+discovery, and routing. The domain work lives in sibling skills — load the one that
+matches your intent:
+
+- **[`ctx-search`](../ctx-search/SKILL.md)** — find source code (`code_search`), find entities by natural language, and traverse graph relationships.
+- **[`ctx-security`](../ctx-security/SKILL.md)** — CVE + SAST resolution inboxes with ready-to-apply fix diffs.
+- **[`ctx-guidelines`](../ctx-guidelines/SKILL.md)** — managed coaching guidelines + discovered AI-guideline files (coverage / drift).
+- **[`ctx-investigate`](../ctx-investigate/SKILL.md)** — service investigation, blast radius, incident response, dependency/migration checks, flow understanding.
+
+The install/auth/version-check steps below are the **single source of truth** — domain
+skills point back here rather than duplicating them.
 
 ## Prerequisites
 
@@ -73,23 +85,23 @@ fi
 
 ## Pick a tool by intent
 
-Prefer a **composite (tier-1)** tool when one matches your intent — it bundles several primitive calls into one. Drop to primitives only when no composite covers the question or you need a specific narrow slice.
+Prefer a **composite (tier-1)** tool when one matches your intent — it bundles several primitive calls into one. Drop to primitives only when no composite covers the question or you need a specific narrow slice. The rightmost column points to the skill that documents the tool in depth.
 
-| Intent | Tool | Tier | Notes |
+| Intent | Tool | Tier | Skill |
 |---|---|---|---|
-| "How does service X work / what does it depend on / who owns it?" | `investigate_service -p serviceName=<name>` | tier-1 | Returns service, deps, dependents, ownership (team/oncall/slack/pagerduty), ADRs, runbooks, flows, incidents, Jira/GitLab issues in one call. Supports partial name match. |
-| "What breaks if I change X?" | `blast_radius -p target=<name>` | tier-1 | Param is `target` (not `serviceName`). Returns risk score (LOW/MEDIUM/HIGH), transitive dependents, affected flows, teams-to-notify, recommendations. |
-| "We're seeing errors in X — runbook + escalation" | `incident_response -p service=<name>` | tier-1 | Param is `service` (not `serviceName`). Optional `symptom=<text>` finds similar past incidents. |
-| "Is package X safe / should I use it?" | `dependency_check -p packageName=<name>` | tier-1 | Vulnerabilities + upgrade history + migration examples. Returns `[]` on tenants where package data isn't indexed. |
-| "How do I migrate from X to Y?" | `code_migration -p fromPackage=<pkg> -p toPackage=<pkg>` | tier-1 | Params are `fromPackage` / `toPackage`. Migration status, examples from teams who've done it. |
-| "How does the <X> business flow work?" | `understand_flow -p flowName=<name>` | tier-1 | Flow steps, services involved, related ADRs and incidents. Returns `[]` on tenants without indexed flows. |
-| "What's the context for this file?" | `get_file_context -p filepath=<path>` | tier-1 | Param is `filepath` (one word, lowercase). Returns ADRs, incidents, security patterns, experts, blast radius for the file's service. **Requires** `git-insights-analyzer` to have run on the repo — returns `[]` on tenants where it hasn't. |
-| "List CVEs with suggested fixes" | `get_cve_resolution_status` | tier-2 | The CVE inbox; `data.recommendedAction` carries the diff or advisory. See [`security.md`](./security.md). |
-| "What are our team's coding standards / does this code follow them?" | `get_coding_guidelines` | tier-2 | Managed coaching guidelines (returns markdown); filter by `language` / `category` / `severity`. See [`coaching-guidelines.md`](./coaching-guidelines.md). |
-| "Which repos have/lack a CLAUDE.md / .cursorrules — do they diverge?" | `get_guideline_sources` | tier-2 | Discovered AI-guideline files (returns markdown); modes `coverage` / `inconsistencies` / `sources`. See [`guideline-sources.md`](./guideline-sources.md). |
-| **Find the code that does X / where is X implemented** (returns source chunks) | `code_search -p query=<text>` | tier-2 | Hybrid vector+keyword search over indexed source; returns code chunks with `sourceUrl`. See [`codebase-search.md`](./codebase-search.md#code-search--actual-source-code-code_search). |
-| Find entities by natural-language query | `find_entities -p query=<text>` | tier-2 | Starting point for graph exploration. See [`codebase-search.md`](./codebase-search.md). |
-| Walk relationships from an entity | `traverse_edges -p entityId=<id>` | tier-2 | After `find_entities`. See [`codebase-search.md`](./codebase-search.md). |
+| "How does service X work / what does it depend on / who owns it?" | `investigate_service -p serviceName=<name>` | tier-1 | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
+| "What breaks if I change X?" | `blast_radius -p target=<name>` | tier-1 | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
+| "We're seeing errors in X — runbook + escalation" | `incident_response -p service=<name>` | tier-1 | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
+| "Is package X safe / should I use it?" | `dependency_check -p packageName=<name>` | tier-1 | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
+| "How do I migrate from X to Y?" | `code_migration -p fromPackage=<pkg> -p toPackage=<pkg>` | tier-1 | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
+| "How does the <X> business flow work?" | `understand_flow -p flowName=<name>` | tier-1 | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
+| "What's the context for this file?" | `get_file_context -p filepath=<path>` | tier-1 | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
+| **Find the code that does X / where is X implemented** | `code_search -p query=<text>` | tier-2 | [`ctx-search`](../ctx-search/SKILL.md) |
+| Find entities by natural-language query | `find_entities -p query=<text>` | tier-2 | [`ctx-search`](../ctx-search/SKILL.md) |
+| Walk relationships from an entity | `traverse_edges -p entityId=<id>` | tier-2 | [`ctx-search`](../ctx-search/SKILL.md) |
+| "List CVEs / SAST findings with suggested fixes" | `get_cve_resolution_status` / `get_sast_resolution_status` | tier-2 | [`ctx-security`](../ctx-security/SKILL.md) |
+| "What are our team's coding standards / does this code follow them?" | `get_coding_guidelines` | tier-2 | [`ctx-guidelines`](../ctx-guidelines/SKILL.md) |
+| "Which repos have/lack a CLAUDE.md / .cursorrules — do they diverge?" | `get_guideline_sources` | tier-2 | [`ctx-guidelines`](../ctx-guidelines/SKILL.md) |
 
 ## Quick start
 
@@ -130,20 +142,3 @@ These have bitten real callers — `mcp describe` lists them but they're easy to
 - `get_file_context` / `resolve_file_to_service` take `filepath` (one word, lowercase — not `filePath`).
 - `find_entities` and `search_knowledge` both take `entityTypes` as a **JSON-array string** (`'entityTypes=["Service"]'`) — despite `mcp describe` claiming comma-separated for `search_knowledge`. The comma form 500s.
 - `query_entities` takes `entityType` (singular) and `namePattern` as a **regex** (despite `mcp describe` advertising `*` wildcards). `*API*` → 500; `.*API.*` → works.
-
-## Codebase search
-
-Two layers, both covered in [`codebase-search.md`](./codebase-search.md):
-
-- **Find actual source code** (the answer is a file/line) → `ctx-cli mcp call code_search -p query=…`. Hybrid vector+keyword search over indexed source; returns ranked code chunks with `sourceUrl` deep links. (REST fallback `POST /api/code-search` for tenants where the tool isn't seeded yet — see the subskill.)
-- **Search the knowledge graph** (the answer is an entity/relationship) → semantic queries, lexical lookups by type, adjacency, and the two-service connection pattern. The standard loop is `find_entities` → `traverse_edges` → `get_entity_by_id`.
-
-## Security & CVEs
-
-For any security search or work resolving CVEs — including severity-filtered queries and the suggested-resolution diff attached to each entity — see [`security.md`](./security.md). The core tool is `get_cve_resolution_status` (the CVE inbox with `data.recommendedAction` carrying the ready-to-apply fix).
-
-## Coding guidelines
-
-To apply the org's **managed coding standards** when writing or reviewing code — fetch the rules first, filter by `language` / `category` / `severity`, and lead with the build-breakers — see [`coaching-guidelines.md`](./coaching-guidelines.md). The tool is `get_coding_guidelines` (a tier-2 coaching retriever that returns markdown).
-
-To inspect the **discovered** AI-guideline files across repos (`CLAUDE.md` / `.cursorrules` / `AGENTS.md` / …) — coverage, cross-repo drift, and which repos are missing them — see [`guideline-sources.md`](./guideline-sources.md). The tool is `get_guideline_sources` (a tier-2 retriever returning markdown, with `coverage` / `inconsistencies` / `sources` modes).
