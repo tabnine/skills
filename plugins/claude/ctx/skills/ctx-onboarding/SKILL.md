@@ -3,9 +3,10 @@ name: ctx-onboarding
 description: >
   Onboard a Context Engine tenant: confirm a model + embedder are configured, then
   connect data sources (GitHub/GitLab/Jira/… repos + credentials) and start ingestion,
-  run the enrichment agents that build the service/dependency graph, and report stats
-  on what CTX now knows. Use for "set up / onboard / get started with CTX", "connect
-  repos and build the graph", or "what does CTX know about my system".
+  run the enrichment agents that build the service/dependency graph, then show what CTX
+  understands about the system (a real service's deps/owners/runbook, blast radius, flows,
+  risks). Use for "set up / onboard / get started with CTX", "connect repos and build the
+  graph", or "what does CTX know about my system".
 allowed-tools: Bash(ctx-cli:*), Bash(curl:*)
 ---
 
@@ -124,26 +125,44 @@ token error means the agent model isn't configured/usable — back to Step 1).
 
 ---
 
-# 4. Stats — what CTX now knows
+# 4. Show that CTX knows their system
 
-Report what the ingestion + agents produced.
+**Lead with concrete, system-specific insight — never raw counts.** The user should think
+"it actually understands my system," not "it counted some rows." Pick the highest-signal
+real entities and let the tier-1 composites tell the story. Aim for 2–3 of these, phrased as
+plain-English findings about *their* system:
+
+- **Investigate a real service** — pick a central one and run `investigate_service`
+  ([`ctx-investigate`](../ctx-investigate/SKILL.md)): one call returns what it depends on,
+  what calls it, who owns it, its runbooks, past incidents, related Jira. Say it as a
+  sentence: *"`<service>` depends on `<X>`/`<Y>`, is called by `<A>`/`<B>`, owned by
+  `<team>` — and here's its runbook."* That one answer proves understanding better than any
+  number.
+- **Blast radius** — *"change `<service>` and these N things are affected: …"* (`blast_radius`).
+- **A real flow** — *"the `<checkout>` flow runs `web → bff → payments → ledger`"*
+  (`understand_flow`).
+- **Risk, with a fix** — if a scanner source is connected: *"you have N CVEs; here's one
+  with a ready-to-apply fix"* (`get_cve_resolution_status`,
+  [`ctx-security`](../ctx-security/SKILL.md)).
+- **Cross-source connection** — *"this Jira epic touches these repos and this service."*
+
+Find the best subjects first, then drill in:
 
 ```bash
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/processing/status"                  # totalSynced, totalProcessed, errors
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/data-source-health/stats/by-source" # per-source counts + health
-# entity counts by type (use a tool that's actually listed — see note):
-ctx-cli mcp call find_entities -p query="service" -p limit=50 -o json
+# central services make the best investigate_service / blast_radius subjects
+ctx-cli mcp call find_entities -p query="service" -p 'entityTypes=["Service"]' -p limit=10 -o json
+ctx-cli mcp call investigate_service -p serviceName="<name>" -o json
+ctx-cli mcp call blast_radius -p target="<name>" -o json
 ```
 
-Summarize: sources connected, code indexed (chunks), **entity counts by type** (services,
-dependencies, flows, CVEs from the agent runs), and per-source health. **Be honest if the
-graph is bare** — if it's mostly `Repository` nodes, the enrichment agents (Step 3) haven't
-run/succeeded; say so rather than dressing up two nodes.
+Counts/health are **supporting detail at most**, never the headline. And **if the graph is
+bare** — mostly `Repository` nodes, no `Service`/dependency/flow entities — say so plainly:
+the enrichment agents (Step 3) haven't built the graph, so there's nothing to demonstrate
+understanding *with* yet (don't dress up repo counts as insight). Then point back to Step 3.
 
-From here the tenant is queryable — hand off to the sibling skills:
-[`ctx-search`](../ctx-search/SKILL.md) (find code/entities),
-[`ctx-investigate`](../ctx-investigate/SKILL.md) (`investigate_service`, blast radius,
-incident response), [`ctx-security`](../ctx-security/SKILL.md) (CVE/SAST inboxes).
+When it's rich, hand off: the tenant is queryable via [`ctx-search`](../ctx-search/SKILL.md) /
+[`ctx-investigate`](../ctx-investigate/SKILL.md) / [`ctx-security`](../ctx-security/SKILL.md)
+— and invite the user's own questions about their system.
 
 > **Tool availability is seed-dependent** — `ctx-cli mcp list` may lack `query_entities` /
 > `investigate_service` / `code_search` (*"Tool not found"*). List first; for code search

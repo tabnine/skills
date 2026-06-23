@@ -18,7 +18,7 @@ matches your intent:
 - **[`ctx-security`](../ctx-security/SKILL.md)** — CVE + SAST resolution inboxes with ready-to-apply fix diffs.
 - **[`ctx-guidelines`](../ctx-guidelines/SKILL.md)** — managed coaching guidelines + discovered AI-guideline files (coverage / drift).
 - **[`ctx-investigate`](../ctx-investigate/SKILL.md)** — service investigation, blast radius, incident response, dependency/migration checks, flow understanding.
-- **[`ctx-onboarding`](../ctx-onboarding/SKILL.md)** — check the agent model + embedder are configured (operator sets them in the UI), connect data sources (repos + credentials) and ingest, run the enrichment agents that build the service/dependency graph, then report stats. Start here to onboard a tenant.
+- **[`ctx-onboarding`](../ctx-onboarding/SKILL.md)** — check the agent model + embedder are configured (operator sets them in the UI), connect data sources (repos + credentials) and ingest, run the enrichment agents that build the service/dependency graph, then show what CTX understands about the system (a service's deps/owners/runbook, blast radius, flows). Start here to onboard a tenant.
 
 The install/auth/version-check steps below are the **single source of truth** — domain
 skills point back here rather than duplicating them.
@@ -103,7 +103,7 @@ Prefer a **composite (tier-1)** tool when one matches your intent — it bundles
 | "List CVEs / SAST findings with suggested fixes" | `get_cve_resolution_status` / `get_sast_resolution_status` | tier-2 | [`ctx-security`](../ctx-security/SKILL.md) |
 | "What are our team's coding standards / does this code follow them?" | `get_coding_guidelines` | tier-2 | [`ctx-guidelines`](../ctx-guidelines/SKILL.md) |
 | "Which repos have/lack a CLAUDE.md / .cursorrules — do they diverge?" | `get_guideline_sources` | tier-2 | [`ctx-guidelines`](../ctx-guidelines/SKILL.md) |
-| **Onboard a tenant / connect repos / build the graph / get stats** | _check model+embedder · connect sources · run agents · stats_ | — | [`ctx-onboarding`](../ctx-onboarding/SKILL.md) |
+| **Onboard a tenant / connect repos / build the graph / "what does CTX know about my system"** | _check model+embedder · connect sources · run agents · show insights_ | — | [`ctx-onboarding`](../ctx-onboarding/SKILL.md) |
 
 ## Quick start
 
