@@ -18,7 +18,7 @@ matches your intent:
 - **[`ctx-security`](../ctx-security/SKILL.md)** — CVE + SAST resolution inboxes with ready-to-apply fix diffs.
 - **[`ctx-guidelines`](../ctx-guidelines/SKILL.md)** — managed coaching guidelines + discovered AI-guideline files (coverage / drift).
 - **[`ctx-investigate`](../ctx-investigate/SKILL.md)** — service investigation, blast radius, incident response, dependency/migration checks, flow understanding.
-- **[`ctx-onboarding`](../ctx-onboarding/SKILL.md)** — guided, resumable setup of a fresh tenant (LLM → embedder → credentials → data sources → ingestion) then a show-the-value tour. Start here on an empty system.
+- **[`ctx-onboarding`](../ctx-onboarding/SKILL.md)** — check a tenant is ready (agent model + embedder configured), guide the operator to configure anything missing, then tour what it knows (stats, graph, capability map). Read-only. Start here to get oriented on a tenant.
 
 The install/auth/version-check steps below are the **single source of truth** — domain
 skills point back here rather than duplicating them.
@@ -103,7 +103,7 @@ Prefer a **composite (tier-1)** tool when one matches your intent — it bundles
 | "List CVEs / SAST findings with suggested fixes" | `get_cve_resolution_status` / `get_sast_resolution_status` | tier-2 | [`ctx-security`](../ctx-security/SKILL.md) |
 | "What are our team's coding standards / does this code follow them?" | `get_coding_guidelines` | tier-2 | [`ctx-guidelines`](../ctx-guidelines/SKILL.md) |
 | "Which repos have/lack a CLAUDE.md / .cursorrules — do they diverge?" | `get_guideline_sources` | tier-2 | [`ctx-guidelines`](../ctx-guidelines/SKILL.md) |
-| **Set up / onboard a new tenant — "get started with CTX / what can it do for me"** | _guided REST setup_ | — | [`ctx-onboarding`](../ctx-onboarding/SKILL.md) |
+| **Is CTX ready / get started / "what can it do for me / show me my graph"** | _readiness check + value tour_ | — | [`ctx-onboarding`](../ctx-onboarding/SKILL.md) |
 
 ## Quick start
 
