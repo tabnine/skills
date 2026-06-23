@@ -180,7 +180,10 @@ list for the exact inputs (host-bound types like Atlassian/ServiceNow carry thei
 ## Step 5 — Define data sources
 
 A data source **binds to its credential via `config.credentialId`** — and the credential's
-type must match the source type (the API rejects a mismatch). Mapping:
+type must match the source type. Note the match is **not** enforced at create time (a
+mismatched `credentialId` still returns `201`); it's checked when the source resolves its
+credential at **sync** time, surfacing as a sync error (`Credential type mismatch`). So pair
+them correctly up front per this mapping:
 
 | source `type` | required credential `type` |
 |---|---|
