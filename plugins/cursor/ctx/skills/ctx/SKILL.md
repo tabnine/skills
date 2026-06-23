@@ -4,7 +4,7 @@ description: >
   Set up and route Context Engine CLI (ctx-cli) work — install, authenticate,
   check version, discover tools, and pick the right tool by intent. Start here
   for anything involving ctx-cli or the Context Engine; it routes to the
-  ctx-search, ctx-security, ctx-guidelines, and ctx-investigate skills.
+  ctx-onboarding, ctx-search, ctx-security, ctx-guidelines, and ctx-investigate skills.
 allowed-tools: Bash(ctx-cli:*), Bash(curl:*)
 ---
 
@@ -18,6 +18,7 @@ matches your intent:
 - **[`ctx-security`](../ctx-security/SKILL.md)** — CVE + SAST resolution inboxes with ready-to-apply fix diffs.
 - **[`ctx-guidelines`](../ctx-guidelines/SKILL.md)** — managed coaching guidelines + discovered AI-guideline files (coverage / drift).
 - **[`ctx-investigate`](../ctx-investigate/SKILL.md)** — service investigation, blast radius, incident response, dependency/migration checks, flow understanding.
+- **[`ctx-onboarding`](../ctx-onboarding/SKILL.md)** — guided, resumable setup of a fresh tenant (LLM → embedder → credentials → data sources → ingestion) then a show-the-value tour. Start here on an empty system.
 
 The install/auth/version-check steps below are the **single source of truth** — domain
 skills point back here rather than duplicating them.
@@ -102,6 +103,7 @@ Prefer a **composite (tier-1)** tool when one matches your intent — it bundles
 | "List CVEs / SAST findings with suggested fixes" | `get_cve_resolution_status` / `get_sast_resolution_status` | tier-2 | [`ctx-security`](../ctx-security/SKILL.md) |
 | "What are our team's coding standards / does this code follow them?" | `get_coding_guidelines` | tier-2 | [`ctx-guidelines`](../ctx-guidelines/SKILL.md) |
 | "Which repos have/lack a CLAUDE.md / .cursorrules — do they diverge?" | `get_guideline_sources` | tier-2 | [`ctx-guidelines`](../ctx-guidelines/SKILL.md) |
+| **Set up / onboard a new tenant — "get started with CTX / what can it do for me"** | _guided REST setup_ | — | [`ctx-onboarding`](../ctx-onboarding/SKILL.md) |
 
 ## Quick start
 
