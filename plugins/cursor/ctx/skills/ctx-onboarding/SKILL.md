@@ -122,12 +122,16 @@ semantic features. Mirror the platform's "embeddings optional" posture; don't pu
 **Read current state** (per-scope active models):
 
 ```bash
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/embedding-models/active"   # {scopes:{entities:{…},code:{…},…}} or empty
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/embedding-models/active"   # {scopes:{entities:{modelId,provider,dimensions},code:{…},…}}
 curl -s "${AUTH[@]}" "$CTX_API_URL/api/embedding-models"          # {models:[…]}, status active|inactive|…
 ```
 
-If a model is already `active` for the scopes they care about (`code`, `entities`,
-`passages`, …), you're done. Otherwise, **validate before creating** — this does a live
+`/active` **always** returns a model per scope — but a scope whose `modelId` is the
+literal `"default"` means the **built-in platform default**, i.e. no custom model is
+configured. So "is an embedder set up?" = does any scope have `modelId !== "default"`
+(equivalently, is `/api/embedding-models` `models[]` non-empty). If a real (non-default)
+model is already active for the scopes they care about (`code`, `entities`, `passages`, …),
+you're done. Otherwise, **validate before creating** — this does a live
 embed call and returns measured dimensions/latency:
 
 ```bash
@@ -154,7 +158,7 @@ Enumerate the supported credential types, then create only what the user needs. 
 go in `data`; the API never returns them — don't echo them in your summary.**
 
 ```bash
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/credentials/meta/types"   # {types:[{type,label,schema,hostRequired,defaultHost}]}
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/credentials/meta/types"   # JSON array: [{type,label,description,fields:[{name,label,type,required}]}]
 curl -s "${AUTH[@]}" "$CTX_API_URL/api/credentials"              # existing creds (id/name/type/host — NO data)
 ```
 
@@ -170,7 +174,8 @@ curl -s "${AUTH[@]}" -H 'Content-Type: application/json' -X POST "$CTX_API_URL/a
 Common `type` → `data` fields: `github_pat`/`gitlab_pat` → `{token}`; `bitbucket_app_password`
 → `{username,appPassword}`; `atlassian_api_token` (Jira/Confluence, host required) →
 `{email,apiToken}`; `servicenow_basic_auth` → `{username,password}`; `openai_api_key` /
-`anthropic_api_key` → `{apiKey}`. Trust `meta/types.schema` over this list for the exact fields.
+`anthropic_api_key` → `{apiKey}`. Trust each type's `fields[]` from `meta/types` over this
+list for the exact inputs (host-bound types like Atlassian/ServiceNow carry their host requirement there).
 
 ## Step 5 — Define data sources
 
@@ -194,13 +199,17 @@ curl -s "${AUTH[@]}" -H 'Content-Type: application/json' -X POST "$CTX_API_URL/a
 #   → {repositories:[{fullName,url,private,alreadyConnected}]} — let the user pick
 ```
 
-Create the source (`config` holds `credentialId` + provider-specific fields like
-`owner`/`repo` for GitHub; `projectKey` etc. for Jira — confirm a provider's exact
-`config` shape from an existing source via `GET /api/data-sources` if unsure):
+Create the source (`config` holds `credentialId` + provider-specific fields). For
+**GitHub** the config requires `owner`, `repo`, **and a non-empty `events` array** (enum:
+`push`/`pull_request`/`issues`/`release`/`package.published`/`package.deleted`) — omitting
+`events` fails validation (`expected array, received undefined`). Other providers differ
+(Jira wants `projectKey`, etc.); the `config` is validated by a per-type Zod schema, so
+**confirm a provider's exact shape from an existing source via `GET /api/data-sources`** (or
+the engine `config-schemas`) if unsure:
 
 ```bash
 curl -s "${AUTH[@]}" -H 'Content-Type: application/json' -X POST "$CTX_API_URL/api/data-sources" \
-  -d '{"name":"ctx repo","type":"github","config":{"credentialId":"<cred-id>","owner":"codota","repo":"ctx"}}'
+  -d '{"name":"ctx repo","type":"github","config":{"credentialId":"<cred-id>","owner":"codota","repo":"ctx","events":["push","pull_request"]}}'
 #   → full data source incl. id, enabled:true
 ```
 
@@ -215,7 +224,7 @@ Trigger a sync per source, then poll until the first entities land:
 curl -s "${AUTH[@]}" -X POST "$CTX_API_URL/api/data-sources/<id>/sync"           # → {workflowId,status,…}
 curl -s "${AUTH[@]}" "$CTX_API_URL/api/data-sources/<id>/sync-status"            # state idle|syncing, lastSyncStatus, health
 curl -s "${AUTH[@]}" "$CTX_API_URL/api/processing/status"                        # workflow + stats.totalSynced/errors + heartbeat
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/data-source-health/stats/summary"         # totalDataSources, successCount, healthScore
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/data-source-health/stats/summary"         # totalSources, enabledSources, healthy/warning/unhealthySources, totalSyncs, successRate
 ```
 
 Report progress in plain terms ("3 repos syncing, 1 200 entities so far, 0 errors") until
