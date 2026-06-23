@@ -1,6 +1,6 @@
 {
   "name": "ctx",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Context Engine CLI (ctx-cli) as focused skills — guided tenant onboarding, code & knowledge-graph search, service investigation, CVE & SAST triage with ready-to-apply fixes, and coding-guideline checks.",
   "author": {
     "name": "Tabnine",
