@@ -1,12 +1,11 @@
 ---
 name: ctx-onboarding
 description: >
-  Onboard a Context Engine tenant — check an LLM/agent model and embedder are
-  configured (guide the operator to set them in the UI if not), then connect data
-  sources (GitHub/GitLab/Jira/… repos + credentials) and kick off ingestion, and
-  finally tour what CTX knows (stats, graph, capability map). Use for "set up /
-  onboard / get started with CTX", "add a data source / connect repos", or "what
-  can CTX do for me / show me my graph".
+  Onboard a Context Engine tenant: confirm a model + embedder are configured, then
+  connect data sources (GitHub/GitLab/Jira/… repos + credentials) and start ingestion,
+  run the enrichment agents that build the service/dependency graph, and report stats
+  on what CTX now knows. Use for "set up / onboard / get started with CTX", "connect
+  repos and build the graph", or "what does CTX know about my system".
 allowed-tools: Bash(ctx-cli:*), Bash(curl:*)
 ---
 
@@ -16,243 +15,137 @@ allowed-tools: Bash(ctx-cli:*), Bash(curl:*)
 > tenant. If it isn't, or you haven't run the once-per-session version check, see the
 > [`ctx`](../ctx/SKILL.md) skill first — it's the single source of truth for install/auth.
 
-Three steps, in order:
+The flow is: **check readiness → connect data sources → run enrichment agents → stats.**
 
-1. **Readiness check (read-only)** — verify a **model** (the agent LLM) and an **embedder**
-   are configured. These are **operator/Solutions-Engineer tasks done in the CTX web UI**
-   (provider + cloud credentials — Vertex/Bedrock/keys; fiddly and environment-specific), so
-   the skill **does not set them** — it detects what's missing and tells the user to
-   configure it.
-2. **Connect data sources (the skill does this)** — create credentials + data sources
-   (GitHub repos and the like) and start ingestion. This is the repetitive connect-the-repos
-   work worth automating. Confirm before each write; never echo secrets.
-3. **Show the value & assist (read-only)** — tour stats, graph, capability map; route the
-   user's questions into the sibling skills.
-
-## How to drive the API
-
-All calls use the same `$CTX_API_URL` / `$CTX_API_KEY` the CLI uses.
+The **model (agent LLM) and embedder are configured by the operator in the CTX web UI**
+(provider + cloud credentials — Vertex/Bedrock/keys; environment-specific), so the skill
+**checks** them but does not set them. Everything else — connecting repos, ingesting,
+running the agents that build the graph, and reporting what landed — the skill does.
 
 ```bash
-# ctx-native key (ctx_...): Authorization: Bearer (or X-API-Key) both work
+# Auth (same key the CLI uses). ctx_ key: Bearer or X-API-Key. t9u_ PAT: add x-auth-type.
 AUTH=(-H "Authorization: Bearer $CTX_API_KEY")
-# Tabnine PAT (t9u_...): add the x-auth-type header
 # AUTH=(-H "Authorization: Bearer $CTX_API_KEY" -H "x-auth-type: tabnine")
 ```
 
-**Write rules (Part 2 only):** read current state first (idempotent, resumable); **confirm
-the exact payload before any POST**; and **never echo secrets** — credentials never return
-their `data`, and `GET /api/runner-environments` *does* echo `envVars` (show only
-`name`/`provider`/`isActive`, never `envVars`).
+**Write rules:** read current state first (idempotent / resumable); confirm before each
+POST; never echo secrets (credentials never return `data`; `runner-environments` echoes
+`envVars` — show only `name`/`provider`/`isActive`).
 
 ---
 
-# Part 1 — Readiness check (read-only)
+# 1. Check readiness (model + embedder)
 
-Run these reads, give a short ✓/✗ **readiness report**, and for each ✗ point the user at the
-**web UI → Settings** (don't configure the model/embedder from here).
-
-## 1. Preflight
+Read-only. Verify the two operator-configured prerequisites; if either is missing, tell the
+user to set it in the **web UI → Settings** and stop there for that capability.
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' "${AUTH[@]}" "$CTX_API_URL/api/ai-settings/status"
+curl -s -o /dev/null -w '%{http_code}\n' "${AUTH[@]}" "$CTX_API_URL/api/ai-settings/status"   # 200 = reachable
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/runner-environments"        # any "isActive": true ? (the agent model)
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/embedding-models/active"    # any scope modelId != "default" ? (the embedder)
 ```
 
-`200` → continue. `401/403` → key wrong / missing `x-auth-type` (for `t9u_`) — see
-[`ctx`](../ctx/SKILL.md). Refused → wrong URL / API down.
+- **Model (agent LLM):** no active runner environment → **agents can't run** (they fail
+  `Not logged in · Please run /login`). Step 3 needs this. → "configure it in Settings → AI."
+- **Embedder:** all scopes `modelId:"default"` (and `find_entities` 500s with *"Semantic
+  search is not available"*) → no embedder; **code/semantic search won't work**. → "store an
+  OpenAI key in Settings." (Structural ingestion in Step 2 still works without it.)
 
-## 2. Model (agent LLM)
-
-The agent runtime (Claude Code) runs on the **active runner environment**. Without it,
-**every agent run fails** (`Not logged in · Please run /login`) — so no enrichment, no
-service/dependency graph.
-
-```bash
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/runner-environments"   # array; any "isActive": true?
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/ai-settings/status"    # .runnerEnvironment (provider/active)
-```
-
-- Any `isActive: true` → ✓ (report `name`/`provider` only — not `envVars`).
-- None / empty → ✗ **No agent model.** Tell the user to configure it in **web UI → Settings
-  → AI / Runner config** (provider + cloud credentials). Until then, agent runs / graph
-  enrichment are unavailable.
-
-## 3. Embedder
-
-Powers **semantic search** (`find_entities`) and **code search**. Optional, but most value
-tours rely on it.
-
-```bash
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/embedding-models/active"   # {scopes:{entities:{modelId,…},…}}
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/embedding-models"          # {models:[…]}
-```
-
-`/active` always returns a model per scope, but `modelId: "default"` means the built-in
-default with **no key wired** (not usable). So:
-
-- Any scope `modelId !== "default"`, or `models[]` non-empty → ✓.
-- All `"default"` / empty → probe `ctx-cli mcp call find_entities -p query=test -p limit=1`.
-  A 500 *"Semantic search is not available. Configure an OpenAI API key."* → ✗ **No
-  embedder.** Tell the user to store an OpenAI key (or configure an embedding model) in
-  **web UI → Settings → Embeddings / Credentials**.
-
-Report the result. The model ✗ blocks enrichment; the embedder ✗ blocks search — but you can
-still connect data sources (Part 2) regardless (structural ingestion doesn't need either;
-code-search embeddings just won't populate until the embedder is set).
+Report a one-line readiness verdict, then proceed with whatever is available.
 
 ---
 
-# Part 2 — Connect data sources
+# 2. Connect data sources & ingest
 
-This is the part the skill **does**. Read existing state first and skip anything already
-present (safe to re-run). Confirm each write; never echo the tokens.
-
-## 2a. Credentials
-
-Enumerate supported types, then create only what's needed. **Secrets go in `data`; the API
-never returns them.**
+Create the credentials and data sources, then sync. Read existing state first and skip
+anything already connected.
 
 ```bash
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/credentials/meta/types"   # JSON array: [{type,label,description,fields:[{name,label,type,required}]}]
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/credentials"              # existing creds (id/name/type/host — NO data)
-```
+# credential types + existing creds/sources
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/credentials/meta/types"   # [{type,label,description,fields:[{name,label,type,required}]}]
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/credentials"              # existing (id/name/type/host — NO data)
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/data-sources"             # existing sources
 
-Create with `{name, type, data:{…}, host?}` (`host` required when the type's
-`hostRequired:true`, e.g. Atlassian/ServiceNow):
-
-```bash
+# 2a. credential (secrets in data, never echoed back)
 curl -s "${AUTH[@]}" -H 'Content-Type: application/json' -X POST "$CTX_API_URL/api/credentials" \
-  -d '{"name":"GitHub PAT","type":"github_pat","data":{"token":"ghp_..."}}'
-#   → {id,name,type,host,createdAt}  (no data) — keep the id for 2b
-```
+  -d '{"name":"GitHub PAT","type":"github_pat","data":{"token":"ghp_..."}}'   # → {id,...} (no data)
 
-Common `type` → `data`: `github_pat`/`gitlab_pat` → `{token}`; `bitbucket_app_password` →
-`{username,appPassword}`; `atlassian_api_token` (Jira/Confluence, host required) →
-`{email,apiToken}`; `servicenow_basic_auth` → `{username,password}`. Trust each type's
-`fields[]` from `meta/types` for the exact inputs.
-
-## 2b. Data sources (e.g. GitHub repos)
-
-A data source **binds to its credential via `config.credentialId`**, and the credential type
-must match the source type. The match is **not** enforced at create (a mismatch still returns
-`201`); it surfaces at **sync** as `Credential type mismatch`. Pair them per this mapping:
-
-| source `type` | required credential `type` |
-|---|---|
-| `github`, `github_actions` | `github_pat` |
-| `gitlab` | `gitlab_pat` |
-| `bitbucket` | `bitbucket_app_password` |
-| `jira`, `confluence` | `atlassian_api_token` |
-| `servicenow` | `servicenow_basic_auth` |
-| `jfrog_artifactory`, `jfrog_xray` | `jfrog_access_token` |
-
-For **GitHub**, discover an org/user's repos (takes the credential id) so the user can pick
-which to connect — and to bulk-create them:
-
-```bash
+# 2b. discover repos for an org (GitHub) — for bulk-connect; skip alreadyConnected:true
 curl -s "${AUTH[@]}" -H 'Content-Type: application/json' -X POST "$CTX_API_URL/api/data-sources/discover" \
-  -d '{"credentialId":"<cred-id>","owner":"my-org"}'
-#   → {repositories:[{fullName,url,private,alreadyConnected}]} — skip alreadyConnected:true
-```
+  -d '{"credentialId":"<cred-id>","owner":"my-org"}'             # → {repositories:[{fullName,private,alreadyConnected}]}
 
-Create each source. For **GitHub** the `config` needs `owner`, `repo`, **and a non-empty
-`events` array** (`push`/`pull_request`/`issues`/`release`/`package.published`/
-`package.deleted`) — omitting `events` fails validation (`expected array, received
-undefined`). Other providers differ (Jira → `projectKey`, etc.); the `config` is validated by
-a per-type Zod schema, so confirm an unfamiliar provider's shape from an existing source via
-`GET /api/data-sources`:
-
-```bash
+# 2c. create source — GitHub config needs owner+repo AND a non-empty events array
 curl -s "${AUTH[@]}" -H 'Content-Type: application/json' -X POST "$CTX_API_URL/api/data-sources" \
-  -d '{"name":"ctx repo","type":"github","config":{"credentialId":"<cred-id>","owner":"codota","repo":"ctx","events":["push","pull_request"]}}'
-#   → full data source incl. id, enabled:true
-```
+  -d '{"name":"ctx","type":"github","config":{"credentialId":"<cred-id>","owner":"codota","repo":"ctx","events":["push","pull_request"]}}'
 
-When connecting many repos, loop over the `discover` results (confirm the set with the user
-first), creating one source each — that bulk connect is the whole point of automating this.
-
-## 2c. Kick off ingestion & verify
-
-```bash
+# 2d. sync
 curl -s "${AUTH[@]}" -X POST "$CTX_API_URL/api/data-sources/<id>/sync"
 ```
 
-> **Verify by data, not just sync-status.** On a freshly-created source the analysis runs on
-> an **immediate** path: `POST .../sync` may return nulls and `sync-status` can stay
-> `state:null` even while ingestion succeeds. Confirm landing by the **data**:
-> `GET /api/code-search/status` shows the repo `completed` with `embeddedChunks` climbing to
-> `totalChunks`; `GET /api/processing/status` `stats`; and `find_entities` returns the repo.
-> A small repo (or a cell without the LSP analyzer / agent enrichment) yields
-> `Repository` + code chunks but a **sparse edge graph** — the rich service/dependency graph
-> needs the agent model (Part 1 #2) and enrichment agents to run.
+Credential type must match the source type (`github`→`github_pat`, `gitlab`→`gitlab_pat`,
+`jira`/`confluence`→`atlassian_api_token`, `servicenow`→`servicenow_basic_auth`,
+`bitbucket`→`bitbucket_app_password`, `jfrog_*`→`jfrog_access_token`) — the mismatch is
+caught at sync (`Credential type mismatch`), not create. Bulk-connect by looping over the
+`discover` results (confirm the set first). Omitting GitHub `events` fails validation
+(`expected array, received undefined`); unfamiliar providers — confirm `config` shape from
+an existing source via `GET /api/data-sources`.
+
+**Verify by data, not sync-status** (which can stay `null` on the immediate-analysis path):
 
 ```bash
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/code-search/status"                 # per-source embeddedChunks/totalChunks
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/data-source-health/stats/summary"   # totalSources, successRate, …
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/code-search/status"   # per-source embeddedChunks/totalChunks → "completed"
 ```
 
 ---
 
-# Part 3 — Show the value & assist
+# 3. Run enrichment agents (build the graph)
 
-Once data exists, tour what CTX knows. Don't dump raw rows — show the connected picture.
-This part **routes into the sibling skills** rather than duplicating them.
+Ingestion alone yields mostly `Repository` nodes. The **service/dependency/flow graph is
+built by agents** — run them on the connected sources. (Requires the model from Step 1; if
+it's not configured these fail `Not logged in`.)
 
-> **Tool availability is seed-dependent.** A tenant may expose only a subset of the catalog
-> — `ctx-cli mcp list` can lack `query_entities`, `investigate_service`, even `code_search`
-> (*"Tool not found"*). Run `ctx-cli mcp list` / `--tier all` to see what's there, fall back
-> to REST for code search (`POST /api/code-search` — see [`ctx-search`](../ctx-search/SKILL.md)),
-> and prefer the tools that *are* listed (`find_entities`, `traverse_edges`, `get_entity_by_id`).
+```bash
+# list available agents (92 kinds) — pick the graph-builders
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/agent-kinds" \
+  | jq -r '.[] | "\(.id)\t\(.name)"' | grep -E 'service-discovery|dependency|package-linker|runbook|team'
 
-## Statistics — what CTX knows
+# trigger a run on a data source — input must be an object (or omitted), NOT a string
+curl -s "${AUTH[@]}" -H 'Content-Type: application/json' -X POST "$CTX_API_URL/api/agent-runs" \
+  -d '{"agentKindId":"<kind-id>","dataSourceId":"<ds-id>"}'      # → {id, status:"queued", workflowId}
+
+# poll until terminal
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/agent-runs/<run-id>"      # status: queued|running|completed|failed (+ error)
+```
+
+Good first agents to build the graph from code sources: **`service-discovery-agent`**, then
+**`service-dependency-deriver`** / **`service-package-linker`**. Run the relevant ones per
+data source, poll each to `completed`, and surface failures plainly (a `Not logged in` /
+token error means the agent model isn't configured/usable — back to Step 1).
+
+---
+
+# 4. Stats — what CTX now knows
+
+Report what the ingestion + agents produced.
 
 ```bash
 curl -s "${AUTH[@]}" "$CTX_API_URL/api/processing/status"                  # totalSynced, totalProcessed, errors
-curl -s "${AUTH[@]}" "$CTX_API_URL/api/data-source-health/stats/by-source" # per-source health + counts
+curl -s "${AUTH[@]}" "$CTX_API_URL/api/data-source-health/stats/by-source" # per-source counts + health
+# entity counts by type (use a tool that's actually listed — see note):
+ctx-cli mcp call find_entities -p query="service" -p limit=50 -o json
 ```
 
-Summarize entity counts by type, services, repositories, dependencies, flows, CVEs, and
-what's still syncing.
+Summarize: sources connected, code indexed (chunks), **entity counts by type** (services,
+dependencies, flows, CVEs from the agent runs), and per-source health. **Be honest if the
+graph is bare** — if it's mostly `Repository` nodes, the enrichment agents (Step 3) haven't
+run/succeeded; say so rather than dressing up two nodes.
 
-> **Be honest about a bare graph.** Raw code ingestion alone yields mostly `Repository` /
-> `RepositoryStats` nodes — the rich graph (services, dependencies, flows, ownership) is
-> built by **enrichment agents**, which need the agent model (Part 1 #2) *and* the analysis
-> pipeline running. If the graph is just repo nodes, **say so** ("repos + code search are
-> indexed, but the service/dependency graph isn't built yet — that needs agent runs"), and
-> point to running enrichment agents rather than touring two nodes.
+From here the tenant is queryable — hand off to the sibling skills:
+[`ctx-search`](../ctx-search/SKILL.md) (find code/entities),
+[`ctx-investigate`](../ctx-investigate/SKILL.md) (`investigate_service`, blast radius,
+incident response), [`ctx-security`](../ctx-security/SKILL.md) (CVE/SAST inboxes).
 
-## Tour the context graph
-
-Walk a few high-value entities and their relationships via
-[`ctx-search`](../ctx-search/SKILL.md) (`find_entities` → `traverse_edges`) and
-[`ctx-investigate`](../ctx-investigate/SKILL.md) (`investigate_service`). Pick 1–2 real
-services and show what they connect to — "look, it's connected," not a table.
-
-## Capability map — "what can be done"
-
-Present a concise menu keyed to the tier-1 composites, grounded in *their* entities, each
-pointing at the skill that owns it. Fill the `<…>` from real names you saw:
-
-| Ask me… | Tool | Skill |
-|---|---|---|
-| "How does `<service>` work / what depends on it / who owns it?" | `investigate_service` | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
-| "What breaks if I change `<service>`?" | `blast_radius` | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
-| "We're seeing errors in `<service>` — runbook + escalation" | `incident_response` | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
-| "Is package `<pkg>` safe? / migrate `<x>`→`<y>`" | `dependency_check` / `code_migration` | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
-| "How does the `<flow>` flow work?" | `understand_flow` | [`ctx-investigate`](../ctx-investigate/SKILL.md) |
-| "Where is `<thing>` implemented?" | `code_search` | [`ctx-search`](../ctx-search/SKILL.md) |
-| "List CVEs / SAST findings with suggested fixes" | `get_cve_resolution_status` | [`ctx-security`](../ctx-security/SKILL.md) |
-
-## First skills (security, SRE) & generic assist
-
-Point at the starter workflows — **explain the opt-in gates, don't flip anything:**
-
-- **Security / CVE auto-remediation** — once a scanner source (Snyk/Checkmarx) + a Git
-  source are ingesting, the CVE inbox ([`ctx-security`](../ctx-security/SKILL.md)) carries
-  ready-to-apply fix diffs. Auto-remediation (auto-PRs) is a deliberate opt-in.
-- **SRE / incident response** — with a PagerDuty/Opsgenie or alert source plus the service
-  graph, `incident_response` returns runbooks + escalation.
-
-Then default into "show me what I can do here": answer the user's own questions against the
-live graph by routing into [`ctx-search`](../ctx-search/SKILL.md) /
-[`ctx-investigate`](../ctx-investigate/SKILL.md) / [`ctx-security`](../ctx-security/SKILL.md).
+> **Tool availability is seed-dependent** — `ctx-cli mcp list` may lack `query_entities` /
+> `investigate_service` / `code_search` (*"Tool not found"*). List first; for code search
+> fall back to REST (`POST /api/code-search`); prefer the tools that *are* listed
+> (`find_entities`, `traverse_edges`, `get_entity_by_id`).

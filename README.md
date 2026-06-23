@@ -166,7 +166,7 @@ The ctx plugin teaches your agent to use the Context Engine CLI (`ctx-cli`). It 
 | **`ctx-investigate`** | Tier-1 composites — `investigate_service`, `blast_radius`, `incident_response`, `dependency_check`, `code_migration`, `understand_flow`, `get_file_context`. |
 | **`ctx-security`** | CVE and SAST resolution inboxes (`get_cve_resolution_status` / `get_sast_resolution_status`), each row carrying a ready-to-apply fix diff or advisory. |
 | **`ctx-guidelines`** | Managed coaching guidelines (`get_coding_guidelines`) plus discovered AI-guideline files (`get_guideline_sources`) — coverage and cross-repo drift. |
-| **`ctx-onboarding`** | Checks the agent model + embedder are configured (guides the operator to set them in the UI if missing), connects data sources (repos + credentials) and triggers sync, then a show-the-value tour (stats, graph, capability map). Ships for Claude Code + Cursor. |
+| **`ctx-onboarding`** | Checks the agent model + embedder are configured (operator sets them in the UI), connects data sources (repos + credentials) and ingests, runs the enrichment agents that build the service/dependency graph, then reports stats. Ships for Claude Code + Cursor (not Gemini/Tabnine — onboarding is run by the SE team, not an end-user surface). |
 
 Examples:
 
