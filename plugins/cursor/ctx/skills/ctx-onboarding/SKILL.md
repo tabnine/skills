@@ -110,6 +110,11 @@ curl -s "${AUTH[@]}" -H 'Content-Type: application/json' -X POST \
 # 3) validate connectivity:                  POST /api/runner-environments/<id>/test  →  {success,message}
 ```
 
+> **Secret-echo caveat (unlike credentials):** `GET`/`POST /api/runner-environments`
+> **returns `envVars` with the secret values in plaintext** in the response (credentials
+> never return their `data`). When you read or summarize a runner environment, show
+> `name`/`provider`/`isActive` only — never print `envVars`.
+
 Shortcut for a plain Anthropic key: `POST /api/ai-settings/anthropic {"apiKey":"sk-ant-..."}`
 also provisions an `anthropic_direct` runner config. Prefer `runner-environments` for
 anything non-Anthropic or when a model must be pinned.
@@ -151,6 +156,14 @@ curl -s "${AUTH[@]}" -H 'Content-Type: application/json' -X POST "$CTX_API_URL/a
 `provider` ∈ `openai | openai-compatible | azure-openai | self-hosted | gemini`. OpenAI
 needs an `openai_api_key` (Step 4, then pass its id as `apiKeyCredentialId`, or rely on a
 tenant/env OpenAI key). Dimensions can't change on an active model — deactivate first.
+
+> **Fast path (verified live):** the `default` model per scope is already OpenAI/1536 — it
+> just needs a key. Storing one with `POST /api/ai-settings/openai {"apiKey":"sk-..."}`
+> (saves an `openai_api_key` credential) **immediately lights up the default embedder**, so
+> semantic search (`find_entities`, code search) works **without** creating a custom model.
+> Create+activate a named model only when you need a non-default model/scope/dimensions.
+> Symptom of a missing key: tools 500 with *"Semantic search is not available. Configure an
+> OpenAI API key."*
 
 ## Step 4 — Define data-source credentials
 
@@ -230,9 +243,20 @@ curl -s "${AUTH[@]}" "$CTX_API_URL/api/processing/status"                       
 curl -s "${AUTH[@]}" "$CTX_API_URL/api/data-source-health/stats/summary"         # totalSources, enabledSources, healthy/warning/unhealthySources, totalSyncs, successRate
 ```
 
-Report progress in plain terms ("3 repos syncing, 1 200 entities so far, 0 errors") until
-`processing/status.stats.totalSynced` grows and at least one source's `lastSyncStatus` is
-`success`. Then move to Arc 2.
+Report progress in plain terms ("3 repos syncing, 1 200 entities so far, 0 errors").
+
+> **Verify by data, not just sync-status (verified live).** On a freshly-created source the
+> analysis runs on an **immediate** path: `POST .../sync` may return a body of nulls and
+> `sync-status` can stay `state:null` / `lastSyncStatus:null` even while ingestion succeeds
+> (the polling workflow reports "0 sources due"). So confirm landing by the **data itself**:
+> the api log shows `Created/updated Repository entity` + `All analysis tasks completed
+> successfully`; `GET /api/code-search/status` shows the repo `completed` with
+> `embeddedChunks` climbing to `totalChunks`; and a `find_entities` query returns the repo.
+> A tiny repo (or a cell without the LSP analyzer — its container needs in-cluster Docker)
+> yields `Repository`/`Package`/code-chunks but a **sparse edge graph** (`relationshipsCreated:0`),
+> so don't expect rich `traverse_edges` output from a small repo.
+
+Then move to Arc 2.
 
 ---
 
@@ -240,6 +264,13 @@ Report progress in plain terms ("3 repos syncing, 1 200 entities so far, 0 error
 
 Once data exists, flip from configurator to guide. Don't dump raw rows — show the
 connected picture. This arc **routes into the sibling skills** rather than duplicating them.
+
+> **Tool availability is seed-dependent (verified live).** A freshly-created tenant exposes
+> only a subset of the catalog — `ctx-cli mcp list` may lack `query_entities`,
+> `investigate_service`, even `code_search` (they return *"Tool not found"*). Always
+> `ctx-cli mcp list`/`--tier all` to see what's actually there, fall back to REST for code
+> search (`POST /api/code-search` — see [`ctx-search`](../ctx-search/SKILL.md)), and prefer
+> the tools that *are* listed (`find_entities`, `traverse_edges`, `get_entity_by_id`).
 
 ## Statistics on your system
 
