@@ -8,7 +8,7 @@
     {
       "name": "tabnine",
       "description": "Search, explore, and investigate your team's remote repositories using Tabnine's Context Engine.",
-      "version": "0.10.0",
+      "version": "0.11.0",
       "author": {
         "name": "Tabnine"
       },
@@ -26,7 +26,7 @@
     {
       "name": "ctx",
       "description": "Context Engine CLI (ctx-cli) as focused skills — code & knowledge-graph search, service investigation, CVE & SAST triage with ready-to-apply fixes, and coding-guideline checks.",
-      "version": "0.10.0",
+      "version": "0.11.0",
       "author": {
         "name": "Tabnine"
       },
