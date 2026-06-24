@@ -1,12 +1,12 @@
 ---
 name: ctx-onboarding
 description: >
-  Onboard a Context Engine tenant: confirm a model + embedder are configured, then
-  connect data sources (GitHub/GitLab/Jira/… repos + credentials) and start ingestion,
-  run the enrichment agents that build the service/dependency graph, then show what CTX
-  understands about the system (a real service's deps/owners/runbook, blast radius, flows,
-  risks). Use for "set up / onboard / get started with CTX", "connect repos and build the
-  graph", or "what does CTX know about my system".
+  Onboard a Context Engine tenant: confirm a model + embedder are configured, connect data
+  sources (GitHub/GitLab/Jira/… repos + credentials) and ingest, then immediately show what
+  CTX understood about each repo (what it is, stack, what it does, what it talks to) with a
+  live semantic-search demo and an invitation to ask questions — and kick off the slower
+  enrichment agents that build the service/dependency graph as a follow-on. Use for "set up
+  / onboard / get started with CTX", "connect repos", or "what does CTX know about my system".
 allowed-tools: Bash(ctx-cli:*), Bash(curl:*)
 ---
 
@@ -16,7 +16,7 @@ allowed-tools: Bash(ctx-cli:*), Bash(curl:*)
 > tenant. If it isn't, or you haven't run the once-per-session version check, see the
 > [`ctx`](../ctx/SKILL.md) skill first — it's the single source of truth for install/auth.
 
-The flow is: **check readiness → connect data sources → run enrichment agents → stats.**
+The flow is: **check readiness → connect & ingest → show what CTX understood (fast) → deepen the graph (follow-on).**
 
 The **model (agent LLM) and embedder are configured by the operator in the CTX web UI**
 (provider + cloud credentials — Vertex/Bedrock/keys; environment-specific), so the skill
@@ -99,14 +99,76 @@ curl -s "${AUTH[@]}" "$CTX_API_URL/api/code-search/status"   # per-source embedd
 
 ---
 
-# 3. Run enrichment agents (build the graph)
+# 3. Show what CTX read & understood (fast — this is the reveal)
 
-Ingestion alone yields mostly `Repository` nodes. The **service/dependency/flow graph is
-built by agents** — run them on the connected sources. (Requires the model from Step 1; if
-it's not configured these fail `Not logged in`.)
+The instant a repo finishes indexing (Step 2), CTX can already tell the user **what their
+system is and does** — *without* waiting on the enrichment agents (Step 4), which are slow
+and may not be seeded with the tier-1 composites on a fresh tenant. **You** (the agent
+running this skill) produce this from the repo's own signal. For the first 1–2 ingested
+repos:
+
+**3a. Pull the essence (cheap, fast).**
+- Composition + size from the `RepositoryStats` node (written *during* ingestion): its `data`
+  JSON has `totalFiles`, `totalLines`, and a per-language breakdown (`name`/`files`/`code`).
+  Find it via `find_entities` / `query_entities` for `RepositoryStats`.
+- README + manifest (`package.json` / `go.mod` / `pyproject.toml` …) + the entry file, via
+  code search (scope to the one data source):
+  ```bash
+  curl -s "${AUTH[@]}" -H 'Content-Type: application/json' -X POST "$CTX_API_URL/api/code-search" \
+    -d '{"query":"readme overview what this project does","limit":3,"dataSourceIds":["<ds-id>"]}'
+  # also query: "dependencies manifest package.json", "main entry point"
+  ```
+  (Use the `code_search` MCP tool if it's listed; otherwise this REST endpoint — see
+  [`ctx-search`](../ctx-search/SKILL.md).)
+
+**3b. Write the precise profile** — in plain language, this is the "smart system" moment:
+  - **What it is** — one or two sentences (*"an MCP server that gives an AI long-term memory
+    via DuckDB"*).
+  - **Type** ▸ service / library / CLI / MCP server / infra …
+  - **Stack** ▸ languages + key frameworks/libs (from the manifest deps)
+  - **Does** ▸ its main capabilities (from the README / entry file)
+  - **Talks to** ▸ external systems (DBs, clouds, APIs, other services)
+  - **Shape** ▸ N files · N lines · top languages (from `RepositoryStats`)
+
+  **Drop generic metrics** — raw counts as a headline and code-complexity scores don't read
+  as understanding; they read as noise.
+
+**3c. One live semantic hit** — run a natural-language `code_search` and show it landing on
+the right file. Proof CTX searches by *meaning*, not keywords:
+```
+  🔍 "how does it authenticate?"  →  src/auth/credential.ts:22   (sim 0.70)
+```
+
+**Render each repo as a compact card**, e.g.:
+```
+  📂 yonidavidson/brain-mcp
+     What it is ▸ an MCP server giving an AI long-term memory (last 2 conversations in
+                  DuckDB; local / S3 / GCS backends)
+     Stack      ▸ TypeScript · DuckDB · OpenAI SDK · node-cron
+     Does       ▸ exposes MCP tools to store/recall conversation context
+     Talks to   ▸ OpenAI · DuckDB · S3 / GCS
+     Shape      ▸ 6 files · 1.6k lines · TypeScript 72%
+     🔍 "where is a memory persisted?"  →  src/index.ts:145
+```
+
+**3d. Offer questions.** Close by inviting the user to ask about their system, and answer
+via [`ctx-search`](../ctx-search/SKILL.md) (`code_search` / `find_entities`). Suggest 3–5
+grounded examples keyed to what you just profiled (*"what external services does X depend
+on?"*, *"where would I add a new MCP tool?"*). That's the hand-off into everyday use — and
+it's available now, not after the slow agents.
+
+---
+
+# 4. Deepen the graph — enrichment agents (follow-on, slower)
+
+Step 3 gives per-repo understanding immediately. To answer **cross-service** questions
+("what depends on X", blast radius, flows), the **service / dependency / flow graph** has to
+be built by enrichment agents — run these as a *background follow-on*, not a gate on the
+Step-3 reveal. (Requires the model from Step 1; if it's not configured these fail
+`Not logged in`.)
 
 ```bash
-# list available agents (92 kinds) — pick the graph-builders
+# list available agents — pick the graph-builders
 curl -s "${AUTH[@]}" "$CTX_API_URL/api/agent-kinds" \
   | jq -r '.[] | "\(.id)\t\(.name)"' | grep -E 'service-discovery|dependency|package-linker|runbook|team'
 
@@ -114,55 +176,19 @@ curl -s "${AUTH[@]}" "$CTX_API_URL/api/agent-kinds" \
 curl -s "${AUTH[@]}" -H 'Content-Type: application/json' -X POST "$CTX_API_URL/api/agent-runs" \
   -d '{"agentKindId":"<kind-id>","dataSourceId":"<ds-id>"}'      # → {id, status:"queued", workflowId}
 
-# poll until terminal
 curl -s "${AUTH[@]}" "$CTX_API_URL/api/agent-runs/<run-id>"      # status: queued|running|completed|failed (+ error)
 ```
 
-Good first agents to build the graph from code sources: **`service-discovery-agent`**, then
-**`service-dependency-deriver`** / **`service-package-linker`**. Run the relevant ones per
-data source, poll each to `completed`, and surface failures plainly (a `Not logged in` /
-token error means the agent model isn't configured/usable — back to Step 1).
+Good builders from code sources: **`service-discovery-agent`**, then
+**`service-dependency-deriver`** / **`service-package-linker`**. **They're slow** (multi-turn
+LLM, minutes per repo) and **time out on large repos** — so kick them off and let the graph
+fill in behind the Step-3 reveal; don't make the user wait on them. Surface failures plainly
+(a `Not logged in` / token error → the agent model isn't usable, back to Step 1).
 
----
-
-# 4. Show that CTX knows their system
-
-**Lead with concrete, system-specific insight — never raw counts.** The user should think
-"it actually understands my system," not "it counted some rows." Pick the highest-signal
-real entities and let the tier-1 composites tell the story. Aim for 2–3 of these, phrased as
-plain-English findings about *their* system:
-
-- **Investigate a real service** — pick a central one and run `investigate_service`
-  ([`ctx-investigate`](../ctx-investigate/SKILL.md)): one call returns what it depends on,
-  what calls it, who owns it, its runbooks, past incidents, related Jira. Say it as a
-  sentence: *"`<service>` depends on `<X>`/`<Y>`, is called by `<A>`/`<B>`, owned by
-  `<team>` — and here's its runbook."* That one answer proves understanding better than any
-  number.
-- **Blast radius** — *"change `<service>` and these N things are affected: …"* (`blast_radius`).
-- **A real flow** — *"the `<checkout>` flow runs `web → bff → payments → ledger`"*
-  (`understand_flow`).
-- **Risk, with a fix** — if a scanner source is connected: *"you have N CVEs; here's one
-  with a ready-to-apply fix"* (`get_cve_resolution_status`,
-  [`ctx-security`](../ctx-security/SKILL.md)).
-- **Cross-source connection** — *"this Jira epic touches these repos and this service."*
-
-Find the best subjects first, then drill in:
-
-```bash
-# central services make the best investigate_service / blast_radius subjects
-ctx-cli mcp call find_entities -p query="service" -p 'entityTypes=["Service"]' -p limit=10 -o json
-ctx-cli mcp call investigate_service -p serviceName="<name>" -o json
-ctx-cli mcp call blast_radius -p target="<name>" -o json
-```
-
-Counts/health are **supporting detail at most**, never the headline. And **if the graph is
-bare** — mostly `Repository` nodes, no `Service`/dependency/flow entities — say so plainly:
-the enrichment agents (Step 3) haven't built the graph, so there's nothing to demonstrate
-understanding *with* yet (don't dress up repo counts as insight). Then point back to Step 3.
-
-When it's rich, hand off: the tenant is queryable via [`ctx-search`](../ctx-search/SKILL.md) /
-[`ctx-investigate`](../ctx-investigate/SKILL.md) / [`ctx-security`](../ctx-security/SKILL.md)
-— and invite the user's own questions about their system.
+Once the graph is built, cross-service questions become answerable via
+[`ctx-investigate`](../ctx-investigate/SKILL.md) (`investigate_service`, `blast_radius`,
+`understand_flow`) and [`ctx-security`](../ctx-security/SKILL.md) (CVE / SAST inboxes). Until
+then, stay on the Step-3 per-repo understanding rather than touring a bare service graph.
 
 > **Tool availability is seed-dependent** — `ctx-cli mcp list` may lack `query_entities` /
 > `investigate_service` / `code_search` (*"Tool not found"*). List first; for code search
